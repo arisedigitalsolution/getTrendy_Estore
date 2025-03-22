@@ -25,7 +25,7 @@ const Footer = () => {
       <MDBFooter bgColor="light" className="text-center text-lg-start ">
         <section
           className=""
-          style={{ backgroundColor: "black", color: "white" }}
+          style={{ backgroundColor: "white", color: "black" }}
         >
           <MDBContainer className="text-center text-md-start  py-5">
             <MDBRow className="mt-3">
@@ -39,7 +39,7 @@ const Footer = () => {
                     objectFit: "contain",
                   }}
                 />
-                <p className="text-white">
+                <p className="text-black">
                   GET Trendy brings you premium-quality T-shirts designed to
                   match your unique style. We believe in combining comfort,
                   creativity, and customer care to deliver the best for you!
@@ -49,12 +49,12 @@ const Footer = () => {
               <MDBCol md="2" lg="2" xl="2" className="mx-auto mb-4">
                 <h6 className="text-uppercase fw-bold mb-4">My Account</h6>
                 <p>
-                  <a href="/aboutUs" className="text-white">
+                  <a href="/aboutUs" className="text-black">
                     About Us
                   </a>
                 </p>
                 <p>
-                  <a href="/myOrders" className="text-white">
+                  <a href="/myOrders" className="text-black">
                     Track Orders
                   </a>
                 </p>
@@ -65,13 +65,13 @@ const Footer = () => {
                 </p> */}
                 {userToken ? (
                   <p>
-                    <a href="/profilePage" className="text-white">
+                    <a href="/profilePage" className="text-black">
                       My Account
                     </a>
                   </p>
                 ) : (
                   <p>
-                    <a href="/login" className="text-white">
+                    <a href="/login" className="text-black">
                       My Account
                     </a>
                   </p>
@@ -88,22 +88,22 @@ const Footer = () => {
                 <h6 className="text-uppercase fw-bold mb-4">Useful links</h6>
 
                 <p>
-                  <a href="/privacyPolicy" className="text-white">
+                  <a href="/privacyPolicy" className="text-black">
                     Privacy Policy
                   </a>
                 </p>
                 <p>
-                  <a href="/termsconditions" className="text-white">
+                  <a href="/termsconditions" className="text-black">
                     Terms & Conditions
                   </a>
                 </p>
                 <p>
-                  <a href="/cancellation-Reschedule" className="text-white">
+                  <a href="/cancellation-Reschedule" className="text-black">
                     Cancellation & Reschedule Policy
                   </a>
                 </p>
                 <p>
-                  <a href="/contact" className="text-white">
+                  <a href="/contact" className="text-black">
                     Contact Us
                   </a>
                 </p>
@@ -111,13 +111,13 @@ const Footer = () => {
 
               <MDBCol md="4" lg="3" xl="3" className="mx-auto mb-md-0 mb-4">
                 <h6 className="text-uppercase fw-bold mb-4">Contact</h6>
-                <p className="text-white">
+                <p className="text-black">
                   <FaEnvelope /> &nbsp; gettrendy.in@gmail.com
                 </p>
-                <p className="text-white">
+                <p className="text-black">
                   <BsFillTelephoneInboundFill /> &nbsp;  +91 85510 00442 / 86260 10443 
                 </p>
-                <p className="text-white">
+                <p className="text-black">
                   <FaLocationPinLock /> &nbsp; Flat No. 403, 4th Floor, B-wing,
                   Saraswati Crystal, Opp. Silver Brich Hospital, Raikar Mala,
                   Dhayari, Pune-411041
