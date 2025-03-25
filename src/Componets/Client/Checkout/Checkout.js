@@ -120,6 +120,10 @@ const Checkout = () => {
             },
           }
         );
+        if (response.data.success === true) {
+          toast.success("Order placed successfully");
+          navigate("/success");
+        }
         if (response.data.error === false) {
           if (paymentType === "CASH") {
             navigate("/order-Summary", {
@@ -131,6 +135,7 @@ const Checkout = () => {
         } else {
           toast.error("something went wrong");
         }
+
       } catch (error) {
         console.log(error);
         const message1 = error?.response?.data?.message[0];

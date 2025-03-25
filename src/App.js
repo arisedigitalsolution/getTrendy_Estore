@@ -49,6 +49,9 @@ import ProductCard from "./Componets/Client/AllProducts/ProductCard";
 import DeliveryHome from "./Componets/DeliveryBoy/DeliveryHome/DeliveryHome";
 import TermsConditions from "./Componets/Client/Terms&Conditions/TermsConditions";
 import RazorpayButton from "./Componets/RazorpayButton";
+import Success from "./Componets/Client/Checkout/Success";
+
+
 
 const App = () => {
   const location = useLocation();
@@ -102,6 +105,7 @@ const App = () => {
         <Route path="/productCard" element={<ProductCard />} />
         <Route path="/delivery-home" element={<DeliveryHome />} />
         <Route path="/termsconditions" element={<TermsConditions />} />
+        <Route path="/Success" element={<Success />} />
 
         {/* Admin Routes */}
         <Route element={<AdminLayout />}>
