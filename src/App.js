@@ -50,6 +50,8 @@ import DeliveryHome from "./Componets/DeliveryBoy/DeliveryHome/DeliveryHome";
 import TermsConditions from "./Componets/Client/Terms&Conditions/TermsConditions";
 import RazorpayButton from "./Componets/RazorpayButton";
 import Success from "./Componets/Client/Success/Success";
+import Shopping from "./Componets/Client/Shop/Shopping";
+
 
 
 
@@ -107,6 +109,8 @@ const App = () => {
         <Route path="/delivery-home" element={<DeliveryHome />} />
         <Route path="/termsconditions" element={<TermsConditions />} />
         <Route path="/success" element={<Success />} />
+        <Route path="/shopping" element={<Shopping />} />
+
 
         {/* Admin Routes */}
         <Route element={<AdminLayout />}>
