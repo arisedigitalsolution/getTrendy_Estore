@@ -15,7 +15,7 @@ import { useCart } from "../../CartContext/CartContext";
 import { useAuth } from "../../AuthContext/AuthContext";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 
-const Shop = () => {
+const Shopping = () => {
   const { userToken } = useAuth();
   const { addToCart } = useCart();
   const navigate = useNavigate();
@@ -382,4 +382,4 @@ const Shop = () => {
   );
 };
 
-export default Shop;
+export default Shopping;
