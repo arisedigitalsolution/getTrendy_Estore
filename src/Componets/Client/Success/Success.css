@@ -10,8 +10,12 @@
 }
 
 img{
-    max-width: 300px !important;
+    width: 100%;
     height: auto;
+}
+
+.img-width{
+    width: 300px;
 }
 
 .card{

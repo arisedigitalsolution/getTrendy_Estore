@@ -14,7 +14,7 @@ const Success = () => {
     <>
       <div className="container section ">
         <div className="col-lg-6 card card-align bg-white-1 p-8 rounded-2xl shadow-2xl w-96 text-center transform transition-all scale-105">
-          <img src={placeOrder} alt="Success" className="mx-auto mb-4 w-40 h-40 rounded-full shadow-lg" />
+          <img src={placeOrder} alt="Success" className="mx-auto mb-4 img-width rounded-full shadow-lg" />
           <h2 className="text-xl font-bold text-gray-800 mb-4">Your order is placed successfully</h2>
           <div className="flex justify-between space-x-4">
             <Link to="/shop">
