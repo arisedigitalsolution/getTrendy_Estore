@@ -49,6 +49,8 @@ import ProductCard from "./Componets/Client/AllProducts/ProductCard";
 import DeliveryHome from "./Componets/DeliveryBoy/DeliveryHome/DeliveryHome";
 import TermsConditions from "./Componets/Client/Terms&Conditions/TermsConditions";
 import RazorpayButton from "./Componets/RazorpayButton";
+
+
 import Success from "./Componets/Client/Success/Success";
 import Shopping from "./Componets/Client/Shop/Shopping";
 
@@ -61,6 +63,7 @@ const App = () => {
 
   const isAdminRoute = () => {
     return (
+      
       location.pathname.startsWith("/admin-") ||
       location.pathname === "/unauthorized" ||
       location.pathname === "/categories" ||
