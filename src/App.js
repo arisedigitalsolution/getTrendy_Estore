@@ -49,11 +49,6 @@ import ProductCard from "./Componets/Client/AllProducts/ProductCard";
 import DeliveryHome from "./Componets/DeliveryBoy/DeliveryHome/DeliveryHome";
 import TermsConditions from "./Componets/Client/Terms&Conditions/TermsConditions";
 import RazorpayButton from "./Componets/RazorpayButton";
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 380c6e1436445be99639ed95f6a1c280e116ea36
 import Success from "./Componets/Client/Success/Success";
 import Shopping from "./Componets/Client/Shop/Shopping";
 
@@ -66,10 +61,6 @@ const App = () => {
 
   const isAdminRoute = () => {
     return (
-<<<<<<< HEAD
-      
-=======
->>>>>>> 380c6e1436445be99639ed95f6a1c280e116ea36
       location.pathname.startsWith("/admin-") ||
       location.pathname === "/unauthorized" ||
       location.pathname === "/categories" ||
@@ -96,11 +87,7 @@ const App = () => {
           element={<PerticularProductPage />}
         />
         <Route path="/r" element={<RazorpayButton />} />
-<<<<<<< HEAD
-        <Route path="/shop" element={<Shop />} />
-=======
         <Route path="/shop" element={<Success />} />
->>>>>>> 380c6e1436445be99639ed95f6a1c280e116ea36
         <Route path="/cartPage" element={<CartPage />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/videogallery" element={<Videogallery />} />
