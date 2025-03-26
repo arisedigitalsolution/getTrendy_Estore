@@ -173,6 +173,8 @@ const PerticularProductPage = () => {
             <div className="product-image">
               <div>
                 
+
+                
               </div>
             </div>
           </div>
