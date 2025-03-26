@@ -18,7 +18,7 @@ import axios from "axios";
 import { useAuth } from "../../AuthContext/AuthContext";
 import { useCart } from "../../CartContext/CartContext";
 import { ToastContainer, toast, Bounce } from "react-toastify";
-import ReactImageMagnify from "react-image-magnify";
+
 
 const PerticularProductPage = () => {
   const { userToken } = useAuth();
