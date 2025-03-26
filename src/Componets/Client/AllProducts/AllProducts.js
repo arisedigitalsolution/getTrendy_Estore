@@ -13,7 +13,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useCart } from "../../CartContext/CartContext";
 import { faUtensils, faWeightHanging } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import ReactImageMagnify from "react-image-magnify";
+
 
 const AllProducts = () => {
   const { userToken } = useAuth();
