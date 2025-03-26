@@ -108,8 +108,8 @@ const App = () => {
         <Route path="/productCard" element={<ProductCard />} />
         <Route path="/delivery-home" element={<DeliveryHome />} />
         <Route path="/termsconditions" element={<TermsConditions />} />
-        <Route path="/Success" element={<Success />} />
-        <Route path="/Shopping" element={<Shopping />} />
+        <Route path="/success" element={<Success />} />
+        <Route path="/shopping" element={<Shopping />} />
 
 
         {/* Admin Routes */}
