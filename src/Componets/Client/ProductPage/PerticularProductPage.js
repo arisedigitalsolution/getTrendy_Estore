@@ -172,21 +172,7 @@ const PerticularProductPage = () => {
           <div className="col-md-6">
             <div className="product-image">
               <div>
-                <ReactImageMagnify
-                  {...{
-                    smallImage: {
-                      alt: "Grapefruit",
-                      isFluidWidth: true,
-                      src: BASEURL + productData.product_image,
-                    },
-                    largeImage: {
-                      src: BASEURL + productData.product_image,
-                      width: 1200,
-                      height: 1200,
-                    },
-                    enlargedImagePosition: "over",
-                  }}
-                />
+                
               </div>
             </div>
           </div>
