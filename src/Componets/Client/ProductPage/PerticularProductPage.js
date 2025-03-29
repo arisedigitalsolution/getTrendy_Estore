@@ -130,7 +130,7 @@ const PerticularProductPage = () => {
   ];
   const getProductsById = async (id) => {
     try {
-      const response = await axios.get(`${BASEURL}/customers/products/${id}`);
+      const response = await axios.get(`${BASEURL}/api/products/${id}`);
       if (response.data) {
         setProductData(response.data.data);
       }
@@ -171,8 +171,8 @@ const PerticularProductPage = () => {
           <div className="col-md-6">
             <div className="product-image">
               <div>
-                
-
+            
+              <img src={BASEURL + productData.product_image}alt="" />
                 
               </div>
             </div>

@@ -59,11 +59,13 @@ const AllProducts = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${BASEURL}/customers/products?page=${pageAll}&limit=${limitAll}`
+        `${BASEURL}/api/products?page=${pageAll}&limit=${limitAll}`
       );
       setLoading(false);
       if (response) {
-        setAllProducts(response.data.rows);
+       
+        console.log("All Products",response.data);
+        setAllProducts(response.data);
         setPagesCountAll(response.data.pages_count); // Set pagination for all products
       }
     } catch (error) {
@@ -76,7 +78,7 @@ const AllProducts = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${BASEURL}/customers/all-products?page=${pageChicken}&limit=${limitChicken}&sub_category=${id}`
+        `${BASEURL}/api/products?page=${pageChicken}&limit=${limitChicken}`
       );
       setLoading(false);
       if (response) {
@@ -148,7 +150,7 @@ const AllProducts = () => {
       setLoading(true);
       console.log(id);
       const response = await axios.get(
-        `${BASEURL}/customers/all-products?page=${pageAll}&limit=${limitAll}&sub_category=${id}`
+        `${BASEURL}/api/products?page=${pageAll}&limit=${limitAll}`
       );
       setLoading(false);
       if (response) {
@@ -176,7 +178,7 @@ const AllProducts = () => {
   const getAllCategories = async () => {
     try {
       const response = await axios.get(
-        `${BASEURL}/customers/sub-category?page=1&limit=50`
+        `${BASEURL}/api/products?page=1&limit=50`
       );
       if (response) {
         setAllCategories(response.data.rows);

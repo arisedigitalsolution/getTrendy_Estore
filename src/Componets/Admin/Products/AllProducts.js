@@ -160,12 +160,12 @@ const AllProducts = () => {
       };
       setLoading(true);
       const response = await axios.get(
-        `${BASEURL}/customers/products?page=${page}&limit=${limit}`,
+        `${BASEURL}/api/products?page=${page}&limit=${limit}`,
         { headers }
       );
       if (response) {
         setLoading(false);
-        const dataWithSr = response.data.rows.map((item, index) => ({
+        const dataWithSr = response.products.map((item, index) => ({
           ...item,
           sr: (page - 1) * limit + index + 1,
         }));

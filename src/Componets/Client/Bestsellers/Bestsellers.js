@@ -38,11 +38,13 @@ const Bestsellers = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${BASEURL}/customers/products?page=${pageAll}&limit=${limitAll}`
+        `${BASEURL}/api/products?page=${pageAll}&limit=${limitAll}`
       );
       setLoading(false);
       if (response) {
-        setAllProducts(response.data.rows);
+        //console.log("Bestsellers", response);
+        
+        setAllProducts(response.products);
         setPagesCountAll(response.data.pages_count);
       }
     } catch (error) {

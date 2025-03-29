@@ -31,6 +31,8 @@ const Shop = () => {
   const [allCategoryList, setAllCategoryList] = useState([]);
   const [visibleCount, setVisibleCount] = useState(6);
 
+ 
+
   const [products, setProducts] = useState([
     {
       id: 1,
@@ -88,7 +90,7 @@ const Shop = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${BASEURL}/customers/products?page=${page}&limit=${limit}`
+        `${BASEURL}/api/products?page=${page}&limit=${limit}`
       );
       if (response) {
         setLoading(false);
@@ -139,7 +141,7 @@ const Shop = () => {
   const getAllCategories = async () => {
     try {
       const response = await axios.get(
-        `${BASEURL}/customers/subcategory-products?page=1&limit=100`,
+        `${BASEURL}/api/category?page=1&limit=100`,
         {
           headers: {
             "x-access-token": userToken || localStorage.getItem("token"),
@@ -147,7 +149,8 @@ const Shop = () => {
         }
       );
       if (response) {
-        setAllCategoryList(response.data);
+        console.log("shop", response.data.categories);
+        setAllCategoryList(response.data.categories);
       }
     } catch (error) {
       console.log(error);
@@ -177,6 +180,9 @@ const Shop = () => {
     }
     getAllCategories();
   }, [page, limit, categoryID]);
+
+
+  console.log("all CategoryList", allCategoryList);
   return (
     <>
       {loading ? <Loader /> : ""}
@@ -203,15 +209,18 @@ const Shop = () => {
           </div> */}
 
           <div className="categories">
+            
             <h4>Categories</h4>
             {allCategoryList && allCategoryList.length > 0 ? (
-              <div>
+              <div> 
                 <ul>
-                  {allCategoryList.slice(0, visibleCount).map((row) => (
+                  {allCategoryList.map((row) => (
+                    
+                    
                     <li
-                      key={row.id}
+                      key={row._id}
                       className="pointer"
-                      onClick={() => showProductsByCategory(row.id)}
+                      onClick={() => showProductsByCategory(row._id)}
                     >
                       {row.name}
                     </li>

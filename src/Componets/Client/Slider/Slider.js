@@ -18,10 +18,15 @@ const Slider = () => {
   const getAllCategories = async () => {
     try {
       const response = await axios.get(
-        `${BASEURL}/customers/sub-category?page=1&limit=50`
+        `${BASEURL}/api/products?page=1&limit=50`
       );
       if (response) {
-        setAllCategorise(response.data.rows);
+        console.log(response);
+        
+        // setAllCategorise(response.data.categories);
+        console.log('Slider component rendered');
+console.log('Loading state:', loading);
+console.log('All categories:', allCategorise);
       }
     } catch (error) {
       console.log(error);

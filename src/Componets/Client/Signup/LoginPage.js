@@ -63,7 +63,7 @@ const Login = () => {
       };
       try {
         const response = await axios.post(
-          BASEURL + "/accounts/user-login/nt/",
+          BASEURL + "/api/auth/login",
           payload
         );
         if (response) {

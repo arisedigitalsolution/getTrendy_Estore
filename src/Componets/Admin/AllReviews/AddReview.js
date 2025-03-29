@@ -39,7 +39,7 @@ const AddReview = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${BASEURL}/customers/products?page=${1}&limit=${200}`
+        `${BASEURL}/api/products?page=${1}&limit=${200}`
       );
       if (response) {
         setLoading(false);

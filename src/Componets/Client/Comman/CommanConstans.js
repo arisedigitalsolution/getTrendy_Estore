@@ -22,8 +22,8 @@ const Countries = [
 const UserRoles = {
   SERVICE_PROVIDER: "Service",
   NORMAL: "Normal",
-  ADMIN: "Admin",
-  Customer: "Customer",
+  ADMIN: "admin",
+  Customer: "user",
   STORE_ADMIN: "Store_admin",
   DELIVERY_MAN: "Delivery_man",
 };

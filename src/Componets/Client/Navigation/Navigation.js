@@ -92,7 +92,7 @@ const Navigation = () => {
   const getAllCategories = async () => {
     try {
       const response = await axios.get(
-        `${BASEURL}/customers/sub-category?page=1&limit=50`,
+        `${BASEURL}/api/products?page=1&limit=50`,
         {
           headers: {
             "x-access-token": userToken || localStorage.getItem("token"),
@@ -100,7 +100,9 @@ const Navigation = () => {
         }
       );
       if (response) {
-        setAllCategoryList(response.data.rows);
+        //console.log("Navigation",response);
+        
+        setAllCategoryList(response.data.products);
       }
     } catch (error) {
       console.log(error);

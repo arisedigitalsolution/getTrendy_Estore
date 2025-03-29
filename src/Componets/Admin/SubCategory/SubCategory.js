@@ -149,7 +149,7 @@ const SubCategory = () => {
       };
       setLoading(true);
       const response = await axios.get(
-        `${BASEURL}/customers/sub-category?page=${page}&limit=${limit}`,
+        `${BASEURL}/api/products?page=${page}&limit=${limit}`,
         { headers }
       );
       if (response) {

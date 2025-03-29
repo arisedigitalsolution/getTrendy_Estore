@@ -158,7 +158,7 @@ const AddProduct = () => {
   const getAllSubCategory = async () => {
     try {
       const response = await axios.get(
-        `${BASEURL}/customers/sub-category?page=1&limit=50`
+        `${BASEURL}/api/products?page=1&limit=50`
       );
       if (response) {
         setSubCategory(response.data.rows);

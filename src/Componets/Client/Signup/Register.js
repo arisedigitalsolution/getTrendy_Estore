@@ -93,19 +93,17 @@ function Register() {
     e.preventDefault();
     if (validateForm()) {
       setLoading(true);
-      const formData = new FormData();
-      formData.append("email", email);
-      formData.append("username", name);
-      formData.append("mobile_number", phone);
-      formData.append("password", password);
-      formData.append("confirmPassword", confirmPassword);
-      formData.append("accepted_policy", check);
-      formData.append("user_role", UserRoles.Customer);
-     
+      const formData = {
+        "name": name,
+        "email": email,
+        "phone": phone,
+        "password": password,
+        "role": UserRoles.Customer
+    }
 
       try {
         const response = await axios.post(
-          BASEURL + "/accounts/register/nt/",
+          BASEURL + "/api/auth/register",
           formData
         );
         if (response) {

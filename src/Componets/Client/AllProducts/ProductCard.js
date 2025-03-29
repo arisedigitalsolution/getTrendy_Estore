@@ -47,11 +47,13 @@ const ProductCard = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${BASEURL}/customers/products?page=${pageAll}&limit=${limitAll}`
+        `${BASEURL}/api/products?page=${pageAll}&limit=${limitAll}`
       );
       setLoading(false);
       if (response) {
-        setAllProducts(response.data.rows);
+        console.log("All Products from Product Card", response.data);
+        
+        setAllProducts(response.products);
         setPagesCountAll(response.data.pages_count);
       }
     } catch (error) {
