@@ -46,7 +46,7 @@ const Footer = () => {
                 </p>
               </MDBCol>
 
-              <MDBCol md="2" lg="2" xl="2" className="mx-auto mb-4">
+              <MDBCol md="2" lg="2" xl="2" className="mx-auto mb-4 ">
                 <h6 className="text-uppercase fw-bold mb-4">My Account</h6>
                 <p>
                   <a href="/aboutUs" className="text-black">
@@ -149,10 +149,10 @@ const Footer = () => {
         </section>
         <div
           className="text-center p-4"
-          style={{ backgroundColor: "black", color: "white" }}
+          style={{ backgroundColor: "white", color: "black" }}
         >
           © {new Date().getFullYear()} All Rights Reserved &nbsp; | &nbsp;
-          <a className="text-reset fw-bold" href="">
+          <a className="text-reset fw-bold " href="">
             Get Trendy
           </a>
         </div>
