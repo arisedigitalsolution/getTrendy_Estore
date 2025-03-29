@@ -87,7 +87,11 @@ const App = () => {
           element={<PerticularProductPage />}
         />
         <Route path="/r" element={<RazorpayButton />} />
+<<<<<<< HEAD
         <Route path="/shop" element={<Shop />} />
+=======
+        <Route path="/shop" element={<Success />} />
+>>>>>>> 497b8114b2e808d0009c62a14fb25efd33f4973b
         <Route path="/cartPage" element={<CartPage />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/videogallery" element={<Videogallery />} />
