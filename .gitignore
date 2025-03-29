@@ -18,10 +18,7 @@ node_modules/
 =======
 <<<<<<< HEAD
 >>>>>>> 497b8114b2e808d0009c62a14fb25efd33f4973b
-# Build directory
-build/
-/build
-.build/
+
 
 # Lock files
 package-lock.json
