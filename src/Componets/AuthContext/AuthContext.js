@@ -30,6 +30,8 @@ export const AuthProvider = ({ children }) => {
   const login = (token, role) => {
     localStorage.setItem("token", token);
     localStorage.setItem("role", role);
+    localStorage.setItem("userToken", token); // Store token in localStorage
+    localStorage.setItem("userRole", role); // Store user role in localStorage
     setIsAuthenticated(true);
     setUserRole(role);
     setUserToken(token); // Set token when logging in
