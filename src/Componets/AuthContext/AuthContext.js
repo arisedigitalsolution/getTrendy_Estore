@@ -8,7 +8,8 @@ export const AuthProvider = ({ children }) => {
     !!localStorage.getItem("token")
   );
   const [userRole, setUserRole] = useState(localStorage.getItem("role"));
-  const [userToken, setUserToken] = useState(localStorage.getItem("token")); // Initialize from localStorage
+  const [userId, setUserId] = useState(localStorage.getItem("userId"));
+  const [userToken, setUserToken] = useState(localStorage.getItem("userToken")); // Initialize from localStorage
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -37,9 +38,11 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("userId");
     setIsAuthenticated(false);
     setUserRole(null);
     setUserToken(null);
+    setUserId(null); // Clear userId on logout
   };
 
   return (

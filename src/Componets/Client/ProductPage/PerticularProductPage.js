@@ -29,7 +29,8 @@ const PerticularProductPage = () => {
   const [productData, setProductData] = useState({});
   const [isExpanded, setIsExpanded] = useState(false);
   const [quantity, setQuantity] = useState(1);
-
+  
+  
   const [formData, setFormData] = useState({
     rating: 0,
     name: "",
@@ -129,13 +130,21 @@ const PerticularProductPage = () => {
     },
   ];
   const getProductsById = async (id) => {
+    console.log("Fetching product with ID:", id);
+  
     try {
       const response = await axios.get(`${BASEURL}/api/products/${id}`);
+      
+      console.log("Full response:", response);
+      
       if (response.data) {
-        setProductData(response.data.data);
+        console.log("Product data received:", response.data);
+        setProductData(response.data);
+      } else {
+        console.log("No data found for this product ID");
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching product by ID:", error.response ? error.response.data : error.message);
     }
   };
 
@@ -151,11 +160,14 @@ const PerticularProductPage = () => {
     }
   };
   const productID = location?.state?.productId;
+  console.log(productID);
   useEffect(() => {
     if (productID) {
       getProductsById(productID);
     }
   }, [productID]);
+
+  
   return (
     <>
       <div className="container my-5" style={{ paddingTop: "150px" }}>
@@ -163,16 +175,16 @@ const PerticularProductPage = () => {
           <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
           <Breadcrumb.Item href="/shop">
             {" "}
-            {productData.sub_category_name}
+            {productData.category }
           </Breadcrumb.Item>
-          <Breadcrumb.Item active>{productData.product_name}</Breadcrumb.Item>
+          <Breadcrumb.Item active>{productData.name}</Breadcrumb.Item>
         </Breadcrumb>
         <div className="row">
           <div className="col-md-6">
             <div className="product-image">
               <div>
             
-              <img src={BASEURL + productData.product_image}alt="" />
+              <img src={BASEURL + productData.image}alt="" />
                 
               </div>
             </div>
@@ -180,9 +192,9 @@ const PerticularProductPage = () => {
           <div className="col-md-6">
             <div className="product-details">
               <p className="product-category">
-                {productData.sub_category_name}
+                {productData.category}
               </p>
-              <h3 className="product-title">{productData.product_name}</h3>
+              <h3 className="product-title">{productData.name}</h3>
 
               <p className="stock-status">
                 <span className="badge bg-success">In Stock</span>
@@ -240,7 +252,7 @@ const PerticularProductPage = () => {
               </div>
 
               <p>SKU: AB32335</p>
-              <p>Category: {productData.sub_category_name}</p>
+              <p>Category: {productData.category }</p>
 
               <div className="social-icons">
                 <FaFacebook className="" />

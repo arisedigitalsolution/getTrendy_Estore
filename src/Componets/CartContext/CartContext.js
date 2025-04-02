@@ -11,19 +11,17 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [cartQuantity, setCartQuantity] = useState(0); // Total number of items in cart
   const [loading, setLoading] = useState(false);
+  console.log("userToken from CartProvider", userToken);
 
   // Fetch Cart Items (GET request)
   const fetchCartItems = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${BASEURL}/orders/cart-item?page=1&limit=50`,
-        {
-          headers: {
-            "x-access-token": userToken,
-          },
-        }
-      );
+      const response = await axios.get(`${BASEURL}api/cart`, {
+        headers: {
+          "x-access-token": userToken,
+        },
+      });
       if (response.data) {
         setCartItems(response.data.rows);
         setCartQuantity(response.data.count);
@@ -37,57 +35,66 @@ export const CartProvider = ({ children }) => {
   };
 
   // Add item to cart (POST request)
-  const addToCart = async (product, quantity) => {
+  const addToCart = async (product, quantity , size) => {
+    console.log("Adding to cart:", product, quantity);
+
+    const userToken = localStorage.getItem("userToken");
+    if (!userToken) {
+        toast.error("User not authenticated");
+        return;
+    }
+
     try {
       const payload = {
-        product: product.id,
+        userId: localStorage.getItem("userId"), // Ensure this key matches the backend expectations
+        productId: product._id, // Change "product" to "productId" to match JSON structure
         quantity: quantity,
-      };
-      const response = await axios.post(`${BASEURL}/orders/my-cart`, payload, {
-        headers: {
-          "x-access-token": userToken,
-        },
-      });
-      if (response.data) {
-        const newCartItem = response.data.data;
-        const existingItem = cartItems.find((item) => item.id === product.id);
+        selectedSize: size, // Ensure 'size' is correctly set before passing
+    };
+    
 
-        // If the item already exists, update the quantity
-        if (existingItem) {
-          setCartItems((prevItems) =>
-            prevItems.map((item) =>
-              item.id === product.id
-                ? { ...item, quantity: item.quantity + 1 }
-                : item
-            )
-          );
-        } else {
-          // If it's a new item, add it to the cart
-          setCartItems((prevItems) => [
-            ...prevItems,
-            { ...newCartItem, quantity: 1 },
-          ]);
+        console.log("Request URL:", `${BASEURL}api/cart/add`);
+        console.log("Payload being sent:", payload );
+
+        const response = await axios.post(`http://142.93.220.230:5000/api/cart/add`, payload, {
+            headers: {
+                "x-access-token": userToken,
+            },
+        });
+
+        console.log("API Response:", response.data);
+
+        if (response.data) {
+            const newCartItem = response.data.data;
+            const existingItem = cartItems?.find((item) => item._id === product._id);
+
+            if (existingItem) {
+                setCartItems((prevItems) =>
+                    prevItems.map((item) =>
+                        item._id === product._id
+                            ? { ...item, quantity: item.quantity + quantity }
+                            : item
+                    )
+                );
+            } else {
+                setCartItems((prevItems) => [
+                    ...prevItems,
+                    { ...newCartItem, quantity: quantity },
+                ]);
+            }
+
+            setCartQuantity((prevQuantity) => prevQuantity + quantity);
+
+            toast.success("Product added to cart");
         }
-
-        // Update cart quantity
-        setCartQuantity((prevQuantity) => prevQuantity + 1);
-        toast.success("Product added to cart");
-      }
     } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.non_field_errors &&
-        error.response.data.non_field_errors[0] ===
-          "The fields cart, product must make a unique set."
-      ) {
-        toast.error("Product already in cart");
-      } else {
-        // Handle other errors
-        toast.error("Failed to add product to cart");
-      }
+        console.error("Add to cart error:", error.response?.data || error.message);
+
+        const errorMessage = error.response?.data?.message || "Failed to add product to cart";
+        toast.error(errorMessage);
     }
-  };
+};
+
 
   // Update cart quantity
   const updateCartQuantity = async (product, newQuantity) => {
@@ -104,7 +111,7 @@ export const CartProvider = ({ children }) => {
       };
 
       const response = await axios.put(
-        `${BASEURL}/orders/my-cart/${product.id}`,
+        `${BASEURL}/api/cart/add/${product.id}`,
         payload,
         {
           headers: {

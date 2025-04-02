@@ -55,43 +55,62 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     if (validateForm()) {
-      setLoading(true);
+        setLoading(true);
 
-      const payload = {
-        email: phone,
-        password: password,
-      };
-      try {
-        const response = await axios.post(
-          BASEURL + "/api/auth/login",
-          payload
-        );
-        if (response) {
-          if (response.data.error == false) {
-            const token = response?.data?.token;
-            const userRole = response?.data?.data?.user_role;
-            login(token, userRole);
-            if (userRole === "Store_admin") {
-              navigate("/admin-allcategory");
-            } else {
-              navigate("/");
+        const payload = {
+            email: phone,
+            password: password,
+        };
+
+        try {
+            console.log("Payload being sent:", payload);
+
+            const response = await axios.post(BASEURL + "/api/auth/login", payload);
+
+            console.log("Full response:", response);
+
+            if (response && response.data) {
+                console.log("Response data:", response.data);
+                console.log("Response user:", response.data.user);
+
+                if (response.data.message === "Login successful") {
+                    const userRole = response?.data?.user?.role;
+                    const userToken = response?.data?.token; // Get the token from the response
+                    const userId = response?.data?.user?.id; // Get the user ID from the response
+
+                    // Store only the user role in localStorage
+                    localStorage.setItem("userRole", userRole);
+                    localStorage.setItem("userId", userId); // Store the user ID in localStorage
+
+                    // Perform login action (without storing token)
+                    login(userToken,userRole);
+
+                    // Navigate based on role
+                    if (userRole === "user") {
+                        navigate("/");
+                    } else {
+                        navigate("/admin-allcategory");
+                    }
+
+                    setLoading(false);
+                    setError(false);
+                } else {
+                    setLoading(false);
+                    setMessage(response?.data?.message || "Invalid credentials");
+                    handleShow();
+                }
             }
+        } catch (error) {
+            console.error("Login error:", error);
+            setError(true);
             setLoading(false);
-            setError(false);
-          }
-        } else {
-          setLoading(false);
-          setMessage(response?.data?.message);
-          handleShow();
+            setMessage(error?.response?.data?.message || "Something went wrong.");
+            handleShow();
         }
-      } catch (error) {
-        setError(true);
-        setLoading(false);
-        setMessage(error?.response?.data?.message || "Something went wrong.");
-        handleShow();
-      }
     }
-  };
+};
+
+  
   const navigateToRegister = () => {
     navigate("/register");
     window.scroll(0, 0);

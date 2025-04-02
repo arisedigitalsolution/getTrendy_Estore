@@ -70,14 +70,19 @@ const Shop = () => {
   };
 
   const getProductsById = async (id) => {
+    console.log("id from shop js",id);
+    
     try {
       setLoading(true);
       const response = await axios.get(
-        `${BASEURL}/customers/all-products?page=${page}&limit=${limit}&sub_category=${id}`
+        `${BASEURL}/api/products/${id}`
       );
       if (response) {
+
+        console.log("product",response);
+        
         setLoading(false);
-        setAllProducts(response.data.rows);
+        setAllProducts(response.data.products);
         setPagesCount(response.data.pages_count);
         setTotalCount(response.data.count);
       }
@@ -93,8 +98,9 @@ const Shop = () => {
         `${BASEURL}/api/products?page=${page}&limit=${limit}`
       );
       if (response) {
+      console.log("all products",response.data.products);
         setLoading(false);
-        setAllProducts(response.data.rows);
+        setAllProducts(response.data.products);
         setPagesCount(response.data.pages_count);
         setTotalCount(response.data.count);
       }
@@ -116,17 +122,21 @@ const Shop = () => {
     navigate("/perticularproductpage", { state: { productId: id } });
   };
   const handleAddToCart = (product) => {
+    const userToken = localStorage.getItem("userToken"); // Ensure correct key
+    console.log("userToken from handleAddToCart shop js", userToken);
+
     if (userToken) {
-      addToCart(product, 1);
-      setInCartStatus((prevStatus) => ({
-        ...prevStatus,
-        [product.id]: true,
-      }));
+        addToCart(product, 1 , 'L');
+        setInCartStatus((prevStatus) => ({
+            ...prevStatus,
+            [product._id]: true, // Ensure consistency with your product structure
+        }));
     } else {
-      navigate("/login");
-      window.scroll(0, 0);
+        navigate("/login");
+        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
     }
-  };
+};
+
 
   const truncateText = (text, limit) => {
     return text.length > limit ? text.slice(0, limit) + "..." : text;
@@ -182,7 +192,8 @@ const Shop = () => {
   }, [page, limit, categoryID]);
 
 
-  console.log("all CategoryList", allCategoryList);
+  //console.log("all CategoryList", allCategoryList);
+  console.log("all Products", allProducts);
   return (
     <>
       {loading ? <Loader /> : ""}
@@ -304,12 +315,12 @@ const Shop = () => {
                     <div className="product-image-container">
                       <Card.Img
                         variant="top"
-                        src={BASEURL + product.product_image}
+                        src={BASEURL + product.image}
                         alt="Product Image"
                         className="particular-product-image"
                       />
                       <FaHeart className="heart-icon" />
-                      {inCartStatus[product.id] && (
+                      {inCartStatus[product._id] && (
                         <Badge className="added-to-cart-badge" bg="success">
                           Added to cart
                         </Badge>
@@ -357,14 +368,14 @@ const Shop = () => {
                         <Button
                           variant="outline-dark"
                           className="view-more-btn"
-                          onClick={() => navigateToProduct(product.id)}
+                          onClick={() => navigateToProduct(product._id)}
                         >
                           View More
                         </Button>
                         <Button
                           className="add-to-cart-btn"
                           onClick={() => handleAddToCart(product)}
-                        >
+                        >   
                           Add to cart
                         </Button>
                       </div>

@@ -1,4 +1,4 @@
-const BASEURL = "http://192.168.19.195:5000";
+const BASEURL = "http://142.93.220.230:5000";
 // const BASEURL = "https://gettrendy.in:8000";
 
 // Countries List

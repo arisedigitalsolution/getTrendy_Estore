@@ -28,7 +28,7 @@ const ProfilePage = () => {
 
   const getUserInfo = async () => {
     try {
-      const response = await axios.get(`${BASEURL}/accounts/user-profile`, {
+      const response = await axios.get(`${BASEURL}/api/auth`, {
         headers: {
           "x-access-token": userToken || localStorage.getItem("token"),
         },
