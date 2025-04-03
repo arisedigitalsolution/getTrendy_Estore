@@ -11,28 +11,38 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [cartQuantity, setCartQuantity] = useState(0); // Total number of items in cart
   const [loading, setLoading] = useState(false);
-  console.log("userToken from CartProvider", userToken);
+  //console.log("userToken from CartProvider", userToken);
 
   // Fetch Cart Items (GET request)
   const fetchCartItems = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${BASEURL}api/cart`, {
+  
+      const userId = localStorage.getItem("userId"); // Ensure userId exists
+      if (!userId) {
+        console.error("User ID is missing");
+        return;
+      }
+  
+      const response = await axios.get(`${BASEURL}api/cart/${userId}`, {
         headers: {
           "x-access-token": userToken,
         },
       });
+  
+      console.log("Cart items response:", response);
+  
       if (response.data) {
         setCartItems(response.data.rows);
         setCartQuantity(response.data.count);
       }
     } catch (error) {
       console.error("Failed to fetch cart items:", error);
-      // toast.error("Failed to fetch cart items");
     } finally {
       setLoading(false);
     }
   };
+  
 
   // Add item to cart (POST request)
   const addToCart = async (product, quantity , size) => {
@@ -56,7 +66,7 @@ export const CartProvider = ({ children }) => {
         console.log("Request URL:", `${BASEURL}api/cart/add`);
         console.log("Payload being sent:", payload );
 
-        const response = await axios.post(`http://142.93.220.230:5000/api/cart/add`, payload, {
+        const response = await axios.post(`${BASEURL}/api/cart/add`, payload, {
             headers: {
                 "x-access-token": userToken,
             },

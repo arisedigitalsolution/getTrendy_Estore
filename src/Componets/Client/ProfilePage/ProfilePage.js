@@ -28,23 +28,34 @@ const ProfilePage = () => {
 
   const getUserInfo = async () => {
     try {
-      const response = await axios.get(`${BASEURL}/api/auth`, {
+      const userId = localStorage.getItem("userId"); // Ensure you have userId
+      if (!userId) {
+        console.error("User ID is missing");
+        return;
+      }
+  
+      const response = await axios.get(`${BASEURL}/api/auth/${userId}`, {
         headers: {
           "x-access-token": userToken || localStorage.getItem("token"),
         },
       });
+  
       const data = response.data.data;
+      console.log("User data by id:", response, userToken);
+  
       setFormData({
-        fullName: data.username,
-        phone: data.mobile_number,
+        fullName: data.name,
+        phone: data.phone,
         email: data.email,
         userId: data.id,
         postcode: data.pincode,
       });
+  
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching user data:", error);
     }
   };
+  
 
   const updateProfile = async () => {
     try {

@@ -9,7 +9,8 @@ import { BASEURL } from "../Comman/CommanConstans";
 const CartPage = () => {
   const navigate = useNavigate();
   const { cartItems, removeFromCart, updateCartQuantity, loading } = useCart(); // Use the updated context
-
+  console.log("Cart items: from CartPage", cartItems);
+  
   // Calculate subtotal
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.product_price * item.quantity,

@@ -74,7 +74,7 @@ const Navigation = () => {
         },
       });
       const data = response.data.data;
-      const nameParts = data.username.split(" ");
+      const nameParts = data.name.split(" ");
       setUserName(nameParts[0]);
     } catch (error) {
       console.log(error);
