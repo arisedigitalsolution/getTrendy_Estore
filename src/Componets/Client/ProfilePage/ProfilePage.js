@@ -47,7 +47,7 @@ const ProfilePage = () => {
         fullName: data.name,
         phone: data.phone,
         email: data.email,
-        userId: data.id,
+        userId: data._id,
         postcode: data.pincode,
       });
   
@@ -67,7 +67,7 @@ const ProfilePage = () => {
       };
 
       const response = await axios.put(
-        `${BASEURL}/accounts/user/${formData.userId}`,
+        `${BASEURL}/api/auth/${formData.userId}`,
         payload,
         {
           headers: {

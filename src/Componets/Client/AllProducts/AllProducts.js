@@ -178,7 +178,7 @@ const AllProducts = () => {
   const getAllCategories = async () => {
     try {
       const response = await axios.get(
-        `${BASEURL}/api/products?page=1&limit=50`
+        `${BASEURL}/api/products?page=1&limit=10`
       );
       if (response) {
         setAllCategories(response.data.rows);
