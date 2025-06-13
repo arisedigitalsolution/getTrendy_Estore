@@ -1,14 +1,10 @@
-/* Categories.css */
-.categories-container {
+/* .categories-container {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    /* 6 items per row */
     gap: 20px;
     padding: 20px;
     max-width: 1200px;
-    /* Set max width to 1200px */
     margin: 0 auto;
-    /* Center the container */
 }
 
 .category-item {
@@ -34,30 +30,25 @@
     transform: scale(1.05);
 }
 
-/* Responsive Design */
 
-/* For screens between 900px and 1199px: Show 4 items per row */
 @media (max-width: 1199px) {
     .categories-container {
         grid-template-columns: repeat(4, 1fr);
     }
 }
 
-/* For screens between 600px and 899px: Show 3 items per row */
 @media (max-width: 899px) {
     .categories-container {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
-/* For screens between 400px and 599px: Show 2 items per row */
 @media (max-width: 599px) {
     .categories-container {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
-/* For screens less than 400px: Show 1 item per row */
 @media (max-width: 399px) {
     .categories-container {
         grid-template-columns: repeat(1, 1fr);
@@ -67,20 +58,164 @@
 @media (max-width: 768px) {
     .categories-container {
         grid-template-columns: repeat(2, 1fr);
-        /* Show 2 items per row */
         gap: 15px;
-        /* Reduce the gap between items */
     }
 
     .category-item img {
         width: 80px;
-        /* Reduce the size of images */
         height: 80px;
-        /* Ensure the images remain square */
     }
 
     .category-item p {
         font-size: 12px;
-        /* Decrease font size for better fit */
     }
+} */
+
+
+.categories-container {
+  /* padding: 2rem;
+  max-width: 1200px; */
+  margin: 0 auto;
+}
+
+.categories-container h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+  font-size: 1rem;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  /* gap: 2rem; */
+}
+
+.category-card {
+  text-decoration: none;
+  color: inherit;
+  background: white;
+  border-radius: 0px 0px 0px 0px !important;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  padding: 0px;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); */
+}
+
+.category-image {
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  background: #f5f5f5;
+  border-radius: 0px !important;
+}
+
+.category-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.category-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0e0e0;
+  font-size: 3rem;
+  color: #666;
+}
+
+.category-info {
+  padding: 1rem;
+}
+
+.category-info h3 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.category-info p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.categories-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 2rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #ff4141;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.categories-error {
+  text-align: center;
+  padding: 2rem;
+  color: #ff4141;
+}
+
+.retry-button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #ff4141;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.retry-button:hover {
+  background: #ff6b6b;
+}
+
+.categories-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .categories-container {
+    padding: 1rem;
+  }
+
+  .categories-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .category-image {
+    height: 150px;
+  }
 }

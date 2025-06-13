@@ -10,6 +10,7 @@ import Footer from "../Footer/Footer";
 import Videogallery from "../Video-gallery/Videogallery";
 import Categories from "../Categories/Categories";
 import ProductCard from "../AllProducts/ProductCard";
+import Subcategory from "../Subcategory/Subcategory";
 
 const Hero = () => {
   return (
@@ -19,7 +20,6 @@ const Hero = () => {
           data-aos="fade-down"
           data-aos-duration="2000"
           data-aos-easing="ease-in-out"
-          
           className="section-title"
         >
           <div className="section-line"></div>
@@ -42,8 +42,9 @@ const Hero = () => {
       </div>
       {/* <AllProducts /> */}
       <ProductCard />
-      <ProductPage />
-      <Bestsellers />
+      {/* <ProductPage /> */}
+      <Subcategory />
+      {/* <Bestsellers /> */}
       <Services />
       {/* <Videogallery /> */}
       {/* <Testimonials /> */}

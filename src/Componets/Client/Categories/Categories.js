@@ -1,51 +1,90 @@
 import React, { useEffect, useState } from "react";
-import "./Categories.css";
+import { Container, Row, Col, Card } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BASEURL } from "../Comman/CommanConstans";
-import { useNavigate } from "react-router-dom";
+import Loader from "../Loader/Loader";
+import "./Categories.css";
 import Aos from "aos";
 import "aos/dist/aos.css";
 
 const Categories = () => {
   const navigate = useNavigate();
-  const [allCategorise, setAllCategorise] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const getAllCategories = async () => {
+  // Fetch all categories
+  const fetchCategories = async () => {
     try {
-      const response = await axios.get(
-        `${BASEURL}/api/products?page=1&limit=50`
-      );
-      if (response) {
-        console.log("Categories",response);
-        
-        setAllCategorise(response.data.products);
+      setLoading(true);
+      const response = await axios.get(`${BASEURL}/api/category?limit=6`); // Limit to 6 categories for display
+
+      if (response && response.data) {
+        setCategories(response.data.rows || []);
       }
+
+      setLoading(false);
     } catch (error) {
-      console.log(error);
-    } finally {
+      console.error("Error fetching categories:", error);
+      setLoading(false);
     }
   };
 
-  const navigateToShop = (Id) => {
-    window.scroll(0, 0);
-    navigate("/shop", { state: { category: Id } });
+  // Navigate to shop with selected category
+  const navigateToCategory = (categoryId) => {
+    navigate("/shop", { state: { categoryId } });
+    window.scrollTo(0, 0);
   };
+
   useEffect(() => {
-    getAllCategories();
+    fetchCategories();
   }, []);
+
   return (
-    <div className="categories-container" data-aos="zoom-in-down">
-      {allCategorise.map((category, index) => (
-        <div
-          key={category.id}
-          className="category-item pointer"
-          onClick={() => navigateToShop(category.id)}
-        >
-          <img src={BASEURL + category.category_image} alt={category.name} />
-          <p>{category.name}</p>
-        </div>
-      ))}
-    </div>
+    <>
+      {loading && <Loader />}
+      <Container fluid className="categories-container my-5">
+        <Row>
+          {categories.length > 0 ? (
+            categories.map((category) => (
+              <Col
+                lg={2}
+                md={4}
+                sm={6}
+                key={category.id}
+                className="mb-4"
+                style={{ padding: "0px" }}
+              >
+                <Card
+                  className="category-card"
+                  onClick={() => navigateToCategory(category.id)}
+                  style={{ margin: "0px", boxShadow: "none" }}
+                >
+                  <div className="category-image-container">
+                    <Card.Img
+                      variant="top"
+                      src={BASEURL + category.category_image}
+                      alt={category.category_name}
+                      className="category-image"
+                    />
+                  </div>
+                  <Card.Body className="text-center">
+                    <Card.Title>{category.category_name}</Card.Title>
+                    {/* <Card.Text className="text-muted">
+                      {category.category_description}
+                    </Card.Text> */}
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))
+          ) : (
+            <Col xs={12} className="text-center">
+              <h4>No categories found</h4>
+            </Col>
+          )}
+        </Row>
+      </Container>
+    </>
   );
 };
 

@@ -13,10 +13,11 @@
 
 .service-row {
     padding: 24px 43px;
-    border: 2px solid #eaebed;
-    border-radius: 16px;
+    border-top: 2px solid #eaebed;
+    border-bottom: 2px solid #eaebed;
+    /* border-radius: 16px; */
     width: 100%;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -26,6 +27,8 @@
     display: flex;
     justify-content: center;
     flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
 }
 
 .service-icon {
@@ -36,4 +39,8 @@
     .margin-btm {
         margin-bottom: 50px;
     }
+}
+
+.ml-10 {
+    margin-left: 10px;
 }

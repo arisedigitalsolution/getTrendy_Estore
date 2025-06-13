@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   Navbar,
   Nav,
@@ -10,8 +12,6 @@ import {
   Modal,
 } from "react-bootstrap";
 import {
-  FaHome,
-  FaShoppingBag,
   FaShoppingCart,
   FaSignInAlt,
   FaSignOutAlt,
@@ -21,133 +21,158 @@ import {
 
 import "./Navigation.css";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { BASEURL } from "../Comman/CommanConstans";
-import { useAuth } from "../../AuthContext/AuthContext";
-import { GiHamburgerMenu } from "react-icons/gi";
-import { MdPermContactCalendar } from "react-icons/md";
+import { BASEURL, authUtils, cartUtils } from "../Comman/CommanConstans";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLayerGroup, faUser } from "@fortawesome/free-solid-svg-icons";
-import { useCart } from "../../CartContext/CartContext";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { ToastContainer } from "react-toastify";
+import axios from "axios";
 
 const Navigation = () => {
   const location = useLocation();
-  const { logout, userToken } = useAuth();
-  const { cartItems, setCartItems } = useCart();
   const navigate = useNavigate();
 
-  const [showDropdowns, setShowDropdowns] = useState({});
   const [allCategoryList, setAllCategoryList] = useState([]);
-  const [userName, setUserName] = useState("");
-  const [show, setShow] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
   const [cartQuantity, setCartQuantity] = useState(0);
-
-  // const cartQuantity = cartItems?.reduce((sum, item) => sum + item.quantity, 0);
+  const [show, setShow] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const [isOpen, setIsOpen] = useState(false);
+  // Check if user is authenticated
+  const isAuthenticated = authUtils.isAuthenticated();
+  const userToken = authUtils.getToken();
+  const userName = authUtils.getUserName() || "";
+  const userProfileImage = authUtils.getProfileImage() || "";
 
-  // Toggle sidebar visibility
+  // Fetch categories
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${BASEURL}/api/category`);
+
+      if (response && response.data) {
+        // Handle different response formats
+        if (response.data.rows) {
+          setAllCategoryList(response.data.rows);
+        } else if (Array.isArray(response.data)) {
+          setAllCategoryList(response.data);
+        } else {
+          console.error("Unexpected category data format:", response.data);
+          setAllCategoryList([]);
+        }
+      } else {
+        setAllCategoryList([]);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setLoading(false);
+      setAllCategoryList([]);
+    }
+  };
+
+  // Fetch cart items
+  const fetchCartItems = async () => {
+    if (isAuthenticated) {
+      try {
+        const items = await cartUtils.fetchCartItems();
+        setCartItems(items || []);
+      } catch (error) {
+        console.error("Error fetching cart:", error);
+        setCartItems([]);
+      }
+    } else {
+      setCartItems([]);
+    }
+  };
+
+  // Initial data loading
+  useEffect(() => {
+    fetchCategories();
+    fetchCartItems();
+
+    // Listen for auth changes
+    const handleAuthChange = () => {
+      fetchCartItems();
+    };
+
+    // Listen for cart changes
+    const handleCartChange = () => {
+      fetchCartItems();
+    };
+
+    window.addEventListener("auth-changed", handleAuthChange);
+    window.addEventListener("cart-changed", handleCartChange);
+
+    return () => {
+      window.removeEventListener("auth-changed", handleAuthChange);
+      window.removeEventListener("cart-changed", handleCartChange);
+    };
+  }, []);
+
+  // Update cart quantity when cartItems change
+  useEffect(() => {
+    const totalQuantity =
+      cartItems?.reduce((sum, item) => {
+        const quantity = item?.quantity || 0;
+        return sum + quantity;
+      }, 0) || 0;
+    setCartQuantity(totalQuantity);
+  }, [cartItems]);
+
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
   const moveToCart = () => {
     navigate("/cartPage");
-    setIsOpen(!isOpen);
+    setIsOpen(false);
     window.scroll(0, 0);
   };
 
   const moveToCheckout = () => {
     navigate("/checkout");
-    setIsOpen(!isOpen);
+    setIsOpen(false);
     window.scroll(0, 0);
-  };
-
-  const getUserInfo = async () => {
-    try {
-      const response = await axios.get(`${BASEURL}/api/auth/`, {
-        headers: {
-          "x-access-token": userToken || localStorage.getItem("token"),
-        },
-      });
-      const data = response.data.data;
-      const nameParts = data.name.split(" ");
-      setUserName(nameParts[0]);
-    } catch (error) {
-      console.log(error);
-    }
   };
 
   const handleLogout = () => {
-    logout();
+    authUtils.logout();
+    navigate("/login");
     handleClose();
-    localStorage.removeItem("token");
-    setUserName("");
-    setCartItems([]);
   };
 
-  const getAllCategories = async () => {
-    try {
-      const response = await axios.get(
-        `${BASEURL}/api/products?page=1&limit=50`,
-        {
-          headers: {
-            "x-access-token": userToken || localStorage.getItem("token"),
-          },
-        }
-      );
-      if (response) {
-        //console.log("Navigation",response);
-        
-        setAllCategoryList(response.data.products);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleMouseEnter = (id) => {
-    setShowDropdowns((prev) => ({ ...prev, [id]: true }));
-  };
-
-  const handleMouseLeave = (id) => {
-    setShowDropdowns((prev) => ({ ...prev, [id]: false }));
-  };
-  const navigateToShop = (Id) => {
+  const navigateToShop = (categoryId) => {
+    navigate("/shop", {
+      state: { category: categoryId },
+      replace: true,
+    });
     window.scroll(0, 0);
-    navigate("/shop", { state: { category: Id } });
   };
 
-  const navigateToProduct = (id) => {
-    window.scroll(0, 0); // Scroll to the top of the page
-    navigate("/perticularproductpage", { state: { productId: id } });
+  // Helper function to safely render category name
+  const renderCategoryName = (category) => {
+    if (!category) return "Category";
+    if (typeof category === "string") return category;
+    return category.category_name || category.name || "Category";
   };
 
-  const handleNavItemClick = (path) => {
-    if (userToken) {
-      navigate(path);
-      window.scroll(0, 0);
-    } else {
-      navigate("/login");
-      window.scroll(0, 0);
-    }
-  };
-  useEffect(() => {
-    if (userToken) {
-      getUserInfo();
-    }
-    getAllCategories();
-    const totalQuantity = cartItems?.reduce(
-      (sum, item) => sum + item.quantity,
-      0
-    );
-    setCartQuantity(totalQuantity);
-  }, [userToken, cartItems]);
   return (
-    <>
+    <div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       <Navbar
         expand="lg"
         fixed="top"
@@ -156,13 +181,13 @@ const Navigation = () => {
         <Container>
           <Navbar.Brand href="/">
             <div className="logo-img">
-              <img src="/Images/logo.jpg" alt="Logo" />
+              <img src="/Images/logo.jpg" alt="GetTrendy Logo" />
             </div>
           </Navbar.Brand>
 
           <div className="cart-div">
             <div className="cart-menu">
-              {userToken && (
+              {isAuthenticated ? (
                 <Nav.Link href="#">
                   <span
                     className={
@@ -170,17 +195,18 @@ const Navigation = () => {
                         ? "cart-item-no small-cart cart-mobile"
                         : "cart-item-no large-cart cart-mobile"
                     }
-                    style={{ color: "rgba(255, 255, 0, 1)" }}
+                    style={{ color: "rgb(255, 0, 0)" }}
                   >
                     {cartQuantity}
                   </span>{" "}
                   <img
                     src="/Images/ShoppingCartSimple.svg"
-                    onClick={() => toggleSidebar()}
+                    onClick={toggleSidebar}
                     className="cart cart-img-mobile"
+                    alt="Cart"
                   />
                 </Nav.Link>
-              )}
+              ) : null}
               <Navbar.Toggle aria-controls="navbar-nav" />
             </div>
           </div>
@@ -219,134 +245,28 @@ const Navigation = () => {
                 &nbsp; Shop
               </Nav.Link>
 
-              {/* Categories  Dropdown*/}
-              {/* <NavDropdown
-                title={
-                  <>
-                    <FontAwesomeIcon icon={faLayerGroup} /> &nbsp; Categories
-                  </>
-                }
-                id="categories-dropdown"
-                show={Object.values(showDropdowns).some((v) => v)}
-                onMouseEnter={() =>
-                  setShowDropdowns((prev) => ({ ...prev, main: true }))
-                }
-                onMouseLeave={() =>
-                  setShowDropdowns((prev) => ({ ...prev, main: false }))
-                }
-              >
-                {allCategoryList.map((category) => (
-                  <NavDropdown
-                    title={
-                      <>
-                        <img
-                          src={BASEURL + category.category_image}
-                          alt="category_image"
-                          style={{
-                            height: "33px",
-                            width: "33px",
-                            objectFit: "cover",
-                            borderRadius: "50px",
-                          }}
-                          onClick={() => navigateToShop(category.id)}
-                        />{" "}
-                        &nbsp;
-                        <span onClick={() => navigateToShop(category.id)}>
-                          {category.name}
+              {/* Categories Dropdown */}
+              <NavDropdown title="Categories" id="categories-dropdown">
+                {allCategoryList && allCategoryList.length > 0 ? (
+                  allCategoryList.map((category) => (
+                    <NavDropdown.Item
+                      key={category._id}
+                      onClick={() => navigateToShop(category._id)}
+                      className="category-item"
+                    >
+                      <div className="d-flex align-items-center">
+                        <span className="category-name">
+                          {renderCategoryName(category)}
                         </span>
-                      </>
-                    }
-                    id={`${category.name.toLowerCase()}-dropdown`}
-                    drop="end"
-                    show={showDropdowns[category.name.toLowerCase()]}
-                    onMouseEnter={() =>
-                      handleMouseEnter(category.name.toLowerCase())
-                    }
-                    onMouseLeave={() =>
-                      handleMouseLeave(category.name.toLowerCase())
-                    }
-                    key={category.category}
-                  >
-                    {category.products.map((product) => (
-                      <NavDropdown.Item
-                        href="#"
-                        key={product.id}
-                        onClick={() => navigateToProduct(product.id)}
-                      >
-                        {product.product_name}
-                      </NavDropdown.Item>
-                    ))}
-                  </NavDropdown>
-                ))}
-              </NavDropdown> */}
+                      </div>
+                    </NavDropdown.Item>
+                  ))
+                ) : (
+                  <NavDropdown.Item>No categories found</NavDropdown.Item>
+                )}
+              </NavDropdown>
 
-              {/* <Navbar.Toggle aria-controls="basic-navbar-nav" /> */}
-              <Navbar.Collapse id="basic-navbar-nav">
-                <Nav className="mr-auto">
-                  <NavDropdown
-                    title={
-                      <>
-                        <svg
-                          width="25"
-                          height="25"
-                          viewBox="0 0 25 25"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M24.5 10.5V22.5C24.5 23.0304 24.2893 23.5391 23.9142 23.9142C23.5391 24.2893 23.0304 24.5 22.5 24.5H2.5C1.96957 24.5 1.46086 24.2893 1.08579 23.9142C0.710714 23.5391 0.5 23.0304 0.5 22.5V10.5C0.5 9.96957 0.710714 9.46086 1.08579 9.08579C1.46086 8.71071 1.96957 8.5 2.5 8.5H22.5C23.0304 8.5 23.5391 8.71071 23.9142 9.08579C24.2893 9.46086 24.5 9.96957 24.5 10.5ZM3.5 6.5H21.5C21.7652 6.5 22.0196 6.39464 22.2071 6.20711C22.3946 6.01957 22.5 5.76522 22.5 5.5C22.5 5.23478 22.3946 4.98043 22.2071 4.79289C22.0196 4.60536 21.7652 4.5 21.5 4.5H3.5C3.23478 4.5 2.98043 4.60536 2.79289 4.79289C2.60536 4.98043 2.5 5.23478 2.5 5.5C2.5 5.76522 2.60536 6.01957 2.79289 6.20711C2.98043 6.39464 3.23478 6.5 3.5 6.5ZM5.5 2.5H19.5C19.7652 2.5 20.0196 2.39464 20.2071 2.20711C20.3946 2.01957 20.5 1.76522 20.5 1.5C20.5 1.23478 20.3946 0.98043 20.2071 0.792893C20.0196 0.605357 19.7652 0.5 19.5 0.5H5.5C5.23478 0.5 4.98043 0.605357 4.79289 0.792893C4.60536 0.98043 4.5 1.23478 4.5 1.5C4.5 1.76522 4.60536 2.01957 4.79289 2.20711C4.98043 2.39464 5.23478 2.5 5.5 2.5Z"
-                            fill="black"
-                          />
-                        </svg>
-                        &nbsp; Categories
-                      </>
-                    }
-                    id="categories-dropdown"
-                  >
-                    <div className="dropdown-content">
-                      {allCategoryList &&
-                        allCategoryList?.map((category, index) => (
-                          <div key={category.id} className="dropdown-item">
-                            <div
-                              className="category-header pointer"
-                              onClick={() => navigateToShop(category.id)}
-                            >
-                              <img
-                                src={BASEURL + category.category_image}
-                                alt={category.name}
-                                style={{
-                                  height: "36px",
-                                  width: "36px",
-                                  objectFit: "cover",
-                                }}
-                                className="category-image"
-                              />
-                              <strong>{category.name}</strong>
-                            </div>
-                            {/* <div className="subcategory">
-                              {category.products.map((product, subIndex) => (
-                                <div
-                                  key={subIndex}
-                                  className="subcategory-item pointer"
-                                  onClick={() => navigateToProduct(product.id)}
-                                >
-                                  <img
-                                    src={BASEURL + product.product_image}
-                                    alt={product.product_name}
-                                    width={36}
-                                    height={36}
-                                    className="subcategory-image"
-                                  />
-                                  {product.product_name}
-                                </div>
-                              ))}
-                            </div> */}
-                          </div>
-                        ))}
-                    </div>
-                  </NavDropdown>
-                </Nav>
-              </Navbar.Collapse>
+              <Navbar.Collapse id="basic-navbar-nav"></Navbar.Collapse>
 
               {/* Contact */}
               <Nav.Link
@@ -367,12 +287,34 @@ const Navigation = () => {
                 </svg>
                 &nbsp; Contact
               </Nav.Link>
+
+              {/* Wishlist */}
+              <Nav.Link
+                href="/Wishlist"
+                active={location.pathname === "/Wishlist"}
+              >
+                <svg
+                  width="26"
+                  height="27"
+                  viewBox="0 0 26 27"
+                  fill="none"
+                  stroke="black"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="feather feather-heart "
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z" />
+                </svg>
+                &nbsp;
+              </Nav.Link>
             </Nav>
 
             <Nav className="align-items-center">
               <div className="cart-div">
                 {/* Cart */}
-                {userToken && (
+                {isAuthenticated && (
                   <Nav.Link href="#">
                     <span
                       className={
@@ -380,87 +322,59 @@ const Navigation = () => {
                           ? "cart-item-no small-cart cart-desktop"
                           : "cart-item-no large-cart cart-desktop"
                       }
-                      style={{ color: "rgba(255, 255, 0, 1)" }}
+                      style={{ color: "rgb(255, 0, 0)" }}
                     >
                       {cartQuantity}
-                    </span>{" "}
-                    <img
-                      src="/Images/ShoppingCartSimple.svg"
-                      onClick={() => toggleSidebar()}
-                      className="cart cart-img-desktop"
-                    />
+                    </span>
+                    <FaShoppingCart size={24} onClick={toggleSidebar} />
                   </Nav.Link>
                 )}
               </div>
-              {/* {userToken && (
+
+              {isAuthenticated ? (
                 <NavDropdown
                   title={
-                    <>
-                      <FontAwesomeIcon icon={faUser} />
-                      <span className="ms-2">
-                        {userName ? userName : "Hello"}
-                      </span>
-                    </>
+                    <div className="user-profile-nav">
+                      {userProfileImage ? (
+                        <img
+                          src={`${BASEURL}${userProfileImage}`}
+                          alt={userName}
+                          className="user-profile-image"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/Images/default-profile.png";
+                          }}
+                        />
+                      ) : (
+                        <FontAwesomeIcon icon={faUser} />
+                      )}
+                      <span className="ms-2">{userName}</span>
+                    </div>
                   }
-                  id="basic-nav-dropdown"
+                  id="user-nav-dropdown"
                 >
-                  <NavDropdown.Item
-                    onClick={() => handleNavItemClick("/profilePage")}
-                  >
+                  <NavDropdown.Item onClick={() => navigate("/dashboard")}>
+                    <FaRegUserCircle size={20} /> &nbsp; Dashboard
+                  </NavDropdown.Item>
+                  <NavDropdown.Item onClick={() => navigate("/profilePage")}>
                     <FaRegUserCircle size={20} /> &nbsp; Profile
                   </NavDropdown.Item>
-                  <NavDropdown.Item
-                    onClick={() => handleNavItemClick("/myOrders")}
-                  >
+                  <NavDropdown.Item onClick={() => navigate("/myOrders")}>
                     <FaTruck size={20} /> &nbsp; My Orders
                   </NavDropdown.Item>
-                  <NavDropdown.Item onClick={() => handleShow()}>
-                    <FaSignOutAlt size={24} />
-                    &nbsp; Log Out
+                  <NavDropdown.Item onClick={handleShow}>
+                    <FaSignOutAlt size={24} /> &nbsp; Log Out
                   </NavDropdown.Item>
                 </NavDropdown>
-              )} */}
-
-              <Nav>
-                {userToken ? (
-                  <NavDropdown
-                    title={
-                      <>
-                        <FontAwesomeIcon icon={faUser} />
-                        <span className="ms-2">
-                          {userName ? userName : "Hello"}
-                        </span>
-                      </>
-                    }
-                    id="basic-nav-dropdown"
-                  >
-                    <NavDropdown.Item
-                      onClick={() => handleNavItemClick("/profilePage")}
-                    >
-                      <FaRegUserCircle size={20} /> &nbsp; Profile
-                    </NavDropdown.Item>
-                    <NavDropdown.Item
-                      onClick={() => handleNavItemClick("/myOrders")}
-                    >
-                      <FaTruck size={20} /> &nbsp; My Orders
-                    </NavDropdown.Item>
-                    <NavDropdown.Item onClick={() => handleShow()}>
-                      <FaSignOutAlt size={24} />
-                      &nbsp; Log Out
-                    </NavDropdown.Item>
-                  </NavDropdown>
-                ) : (
-                  <Nav.Link href="/login">
-                    <FaSignInAlt size={24} />
-                    <span className="ms-2">Sign In</span>
-                  </Nav.Link>
-                )}
-              </Nav>
+              ) : (
+                <Nav.Link href="/login">
+                  <FaSignInAlt size={24} /> &nbsp; Login
+                </Nav.Link>
+              )}
             </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
-
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Alert</Modal.Title>
@@ -470,7 +384,7 @@ const Navigation = () => {
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>
-          <Button variant="danger" onClick={() => handleLogout()}>
+          <Button variant="danger" onClick={handleLogout}>
             Ok
           </Button>
         </Modal.Footer>
@@ -488,15 +402,22 @@ const Navigation = () => {
 
           {/* Cart Items Container with Auto Scroll */}
           <div className="cart-items-container">
-            {cartItems.length > 0 ? (
+            {cartItems && cartItems.length > 0 ? (
               cartItems.map((item) => (
-                <div className="customs-shop-card mt-3" key={item.id}>
-                  <Row noGutters className="align-items-center g-5">
+                <div
+                  className="customs-shop-card mt-3"
+                  key={item._id || item.id}
+                >
+                  <Row className="align-items-center g-5">
                     <Col xs={4} className="text-center">
                       <img
-                        src={`${BASEURL}${item.product_image}`}
-                        alt={item.product}
+                        src={`${BASEURL}${item.image || item.product_image}`}
+                        alt={item.name || item.product_name}
                         className="shop-img"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/Images/placeholder.jpg";
+                        }}
                       />
                     </Col>
 
@@ -508,9 +429,10 @@ const Navigation = () => {
                             (5.0)
                           </span>
                         </p>
-                        <strong>{item.product_name}</strong>
+                        <strong>{item.name || item.product_name}</strong>
                         <p className="card-text">
-                          ₹{item.product_price}.00 * {item.quantity}
+                          ₹{item.price || item.product_price}.00 *{" "}
+                          {item.quantity}
                         </p>
                       </div>
                     </Col>
@@ -524,27 +446,21 @@ const Navigation = () => {
 
           {/* Fixed Button Section */}
           <div className="end-section">
-            <Button
-              onClick={() => moveToCart()}
-              style={{ background: "#E9272D" }}
-            >
+            <Button onClick={moveToCart} style={{ background: "#E9272D" }}>
               View Cart
             </Button>
-            <Button
-              style={{ background: "#E9272D" }}
-              onClick={() => moveToCheckout()}
-            >
+            <Button style={{ background: "#E9272D" }} onClick={moveToCheckout}>
               Checkout
             </Button>
           </div>
         </div>
 
-        {/* Overlay (Optional) */}
+        {/* Overlay */}
         {isOpen && (
           <div className="sidebar-overlay" onClick={toggleSidebar}></div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

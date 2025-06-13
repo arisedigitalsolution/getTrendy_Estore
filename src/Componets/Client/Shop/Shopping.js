@@ -21,7 +21,7 @@ const Shopping = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(8);
+  const [limit, setLimit] = useState(12);
   const [value, setValue] = useState([20, 37]);
   const [pagesCount, setPagesCount] = useState(1);
   const [allProducts, setAllProducts] = useState([]);

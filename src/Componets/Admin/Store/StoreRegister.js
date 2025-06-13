@@ -1,330 +1,324 @@
-import React, { useEffect, useState } from "react";
-import { Form, Button, Container, Row, Col, Modal } from "react-bootstrap";
-import { NavLink, useNavigate } from "react-router-dom";
-import {
-  faEnvelope,
-  faEye,
-  faEyeSlash,
-  faLocationDot,
-  faPhone,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import axios from "axios";
-import Loader from "../../Client/Loader/Loader";
-import { BASEURL, UserRoles } from "../../Client/Comman/CommanConstans";
-import { useAuth } from "../../AuthContext/AuthContext";
-import Footer from "../../Client/Footer/Footer";
+"use client"
+
+import { useState } from "react"
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import axios from "axios"
+import { Button, Col, Container, Form, Row, Modal } from "react-bootstrap"
+import { BASEURL, UserRoles } from "../../Client/Comman/CommanConstans"
+import { useAuth } from "../../AuthContext/AuthContext"
+import { useNavigate } from "react-router-dom"
+import Loader from "../../Client/Loader/Loader"
 
 const StoreRegister = () => {
-  const { login } = useAuth();
-  let [type, setType] = useState("password");
-  let [type1, setType1] = useState("password");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState({});
-  const [show, setShow] = useState(false);
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [check, setCheck] = useState(true);
-  const [pincode, setPinCode] = useState();
+  const { userToken } = useAuth()
+  const navigate = useNavigate()
 
-  const handleClose = () => {
-    setShow(false);
-  };
-  const handleShow = () => setShow(true);
+  const [formData, setFormData] = useState({
+    storeName: "",
+    ownerName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    address: "",
+    city: "",
+    state: "",
+    pincode: "",
+    gstNumber: "",
+    panNumber: "",
+    role: UserRoles.STORE_OWNER,
+  })
 
-  const navigate = useNavigate();
+  const [errors, setErrors] = useState({})
+  const [message, setMessage] = useState("")
+  const [showModal, setShowModal] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const togglePasswordVisibility = () => {
-    setType(type === "password" ? "text" : "password");
-  };
+  const handleBack = () => {
+    window.history.back()
+  }
 
-  const toggleConfirmPasswordVisibility = () => {
-    setType1(type1 === "password" ? "text" : "password");
-  };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
 
-  const validateForm = () => {
-    let valid = true;
-    const newErrors = {};
-    if (!name) {
-      newErrors.name = "Name is required";
-      valid = false;
+  const validate = () => {
+    const errors = {}
+    if (!formData.storeName) errors.storeName = "Store name is required"
+    if (!formData.ownerName) errors.ownerName = "Owner name is required"
+    if (!formData.email) errors.email = "Email is required"
+    if (!formData.phone) errors.phone = "Phone is required"
+    if (!formData.password) errors.password = "Password is required"
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = "Passwords do not match"
     }
-    if (!email) {
-      newErrors.email = "Email address is required";
-      valid = false;
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email address is invalid";
-      valid = false;
-    }
-    if (!phone) {
-      newErrors.phone = "Phone Number is required";
-      valid = false;
-    }
-    if (!pincode) {
-      newErrors.pincode = "Pin code is required";
-    }
-    if (!password) {
-      newErrors.password = "Password is required";
-      valid = false;
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be 6 digit long";
-      valid = false;
-    }
+    if (!formData.address) errors.address = "Address is required"
+    if (!formData.city) errors.city = "City is required"
+    if (!formData.state) errors.state = "State is required"
+    if (!formData.pincode) errors.pincode = "Pincode is required"
 
-    if (!confirmPassword) {
-      newErrors.confirmPassword = "Confirm Password is required";
-      valid = false;
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-      valid = false;
-    }
-
-    setErrors(newErrors);
-    return valid;
-  };
+    setErrors(errors)
+    return Object.keys(errors).length === 0
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      setLoading(true);
-      const payload = {
-        email: email,
-        username: name,
-        mobile_number: phone,
-        password: password,
-        confirmPassword: confirmPassword,
-        accepted_policy: check,
-        user_role: UserRoles.STORE_ADMIN,
-        pincode: pincode,
-      };
-      try {
-        const response = await axios.post(
-          BASEURL + "/accounts/register/nt/",
-          payload
-        );
-        if (response) {
-          console.log(response);
-          const token = response?.data?.token;
-          const userRole = response?.data?.data?.user_role;
-          login(token, userRole);
-          setMessage(response?.data?.message);
-          handleShow();
-          setEmail("");
-          setName("");
-          setPassword("");
-          setConfirmPassword("");
-          navigate("/storeLogin");
-        }
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-        const emailMessage = error?.response?.data?.message[0];
-        const mobileMessage = error?.response?.data?.message[1];
-        setMessage(emailMessage || mobileMessage || "Internal Server Error");
-        handleShow();
-      }
-    } else {
-      console.log("Form is invalid.");
+    e.preventDefault()
+    if (!validate()) {
+      setMessage("Please fill out all required fields")
+      setShowModal(true)
+      return
     }
-  };
 
-  useEffect(() => {}, [type]);
+    try {
+      setLoading(true)
+      const headers = {
+        Authorization: `Bearer ${userToken}`,
+        "Content-Type": "application/json",
+      }
 
-  const navigateTologin = () => {
-    navigate("/storeLogin");
-    window.scroll(0, 0);
-  };
+      const submitData = { ...formData }
+      delete submitData.confirmPassword
+
+      const response = await axios.post(`${BASEURL}/api/stores/register`, submitData, { headers })
+      setMessage("Store registered successfully")
+      setShowModal(true)
+      setLoading(false)
+
+      setTimeout(() => {
+        navigate("/admin-stores")
+      }, 1500)
+    } catch (error) {
+      setLoading(false)
+      setMessage(`Error: ${error.response?.data?.message || error.message}`)
+      setShowModal(true)
+      console.error(error)
+    }
+  }
+
   return (
     <>
-      {loading ? <Loader /> : ""}
-      <Container
-        fluid
-        className="d-flex align-items-center justify-content-center Register-Container"
-      >
-        <Container fluid>
-          <Row className="">
-            <Col
-              className="d-flex flex-column align-items-center justify-content-center"
-              style={{
-                backgroundColor: "#FFFFFF",
-                padding: "2rem",
-                position: "relative",
-              }}
-            >
-              <div className="login-form-container">
-                <h1 className="mb-3 text-center loginheding">Welcome!</h1>
-                <p className="text-center">
-                  Don’t have an account? Create a free account.
-                </p>
-                <form onSubmit={handleSubmit}>
-                  <div className="buttomsapcec">
-                    <label htmlFor="name" className="title-heading">
-                      Name
-                    </label>
-                    <div className="input-group">
-                      <input
-                        type="text"
-                        id="name"
-                        placeholder="Enter your name"
-                        className="custom-input"
-                        onChange={(e) => setName(e.target.value)}
-                      />
-                      <FontAwesomeIcon icon={faUser} className="input-icon" />
-                    </div>
-                    {errors && <p className="text-danger">{errors.name}</p>}
-                  </div>
-                  <div className="buttomsapcec">
-                    <label htmlFor="email" className="title-heading">
-                      Email Address
-                    </label>
-                    <div className="input-group">
-                      <input
-                        type="email"
-                        id="email"
-                        placeholder="Enter your Email Address"
-                        className="custom-input"
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                      <FontAwesomeIcon
-                        icon={faEnvelope}
-                        className="input-icon"
-                      />
-                    </div>
-                    {errors && <p className="text-danger">{errors.email}</p>}
-                  </div>
-                  <div className="buttomsapcec">
-                    <label htmlFor="phonenumber" className="title-heading">
-                      Phone Number
-                    </label>
-                    <div className="input-group">
-                      <input
-                        type="number"
-                        id="phonenumber"
-                        placeholder="Enter your Phone Number"
-                        className="custom-input"
-                        onChange={(e) => setPhone(e.target.value)}
-                      />
-                      <FontAwesomeIcon icon={faPhone} className="input-icon" />
-                    </div>
-                    {errors && <p className="text-danger">{errors.phone}</p>}
-                  </div>
-                  <div className="buttomsapcec">
-                    <label htmlFor="pincode" className="title-heading">
-                      Pin Code
-                    </label>
-                    <div className="input-group">
-                      <input
-                        type="number"
-                        id="pincode"
-                        placeholder="Enter your Pin Code"
-                        className="custom-input"
-                        onChange={(e) => setPinCode(e.target.value)}
-                      />
-                      <FontAwesomeIcon
-                        icon={faLocationDot}
-                        className="input-icon"
-                      />
-                    </div>
-                    {errors && <p className="text-danger">{errors.pincode}</p>}
-                  </div>
-                  <div className="buttomsapcec">
-                    <label htmlFor="Password" className="title-heading">
-                      Password
-                    </label>
-                    <div className="input-group">
-                      <input
-                        type={type}
-                        id="Password"
-                        placeholder="Enter your Password"
-                        className="custom-input"
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      <FontAwesomeIcon
-                        icon={type === "password" ? faEyeSlash : faEye}
-                        className="input-icon pointer"
-                        onClick={() => togglePasswordVisibility()}
-                      />
-                    </div>
-                    {errors && <p className="text-danger">{errors.password}</p>}
-                  </div>
-                  <div className="buttomsapcec">
-                    <label htmlFor="confirmpassword" className="title-heading">
-                      Confirm Password
-                    </label>
-                    <div className="input-group">
-                      <input
-                        type={type1}
-                        id="confirmpassword"
-                        placeholder="Enter your Confirm Password"
-                        className="custom-input"
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                      />
-                      <FontAwesomeIcon
-                        icon={type1 === "password" ? faEyeSlash : faEye}
-                        className="input-icon pointer"
-                        onClick={toggleConfirmPasswordVisibility}
-                      />
-                    </div>
-                    {errors && (
-                      <p className="text-danger">{errors.confirmPassword}</p>
-                    )}
-                  </div>
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <Form.Check
-                      type="checkbox"
-                      label="I agree to the Terms and Conditions"
-                      onChange={(e) => setCheck(e.target.checked)}
-                      checked={check}
-                    />
-                  </div>
-                  <div className="d-flex align-items-center justify-content-center">
-                    <Button className="cutomebutton" type="submit">
-                      Sign Up
-                    </Button>
-                  </div>
-                  <div className="d-flex justify-content-center align-items-center mt-3">
-                    <p>
-                      Already have an account?{" "}
-                      <NavLink
-                        to="/storeLogin"
-                        onClick={() => navigateTologin()}
-                      >
-                        <span className="create-account pointer">
-                          Log in here.
-                        </span>
-                      </NavLink>
-                    </p>
-                  </div>
-                </form>
-              </div>
-              {/* Image container */}
-              <div className="login-img">
-                <img src="/Images/Login_img.png" alt="Login" />
-              </div>
-            </Col>
-          </Row>
-        </Container>
+      {loading && <Loader />}
+      <Container className="bg-filler">
+        <Row className="py-3">
+          <div className="text-start">
+            <FontAwesomeIcon icon={faArrowLeft} className="backicon pointer mb-3" onClick={handleBack} />
+          </div>
+          <h1 className="mb-3">Register New Store</h1>
+
+          <Form onSubmit={handleSubmit}>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Store Name*</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="storeName"
+                    value={formData.storeName}
+                    onChange={handleInputChange}
+                    isInvalid={!!errors.storeName}
+                    placeholder="Enter store name"
+                  />
+                  <Form.Control.Feedback type="invalid">{errors.storeName}</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Owner Name*</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="ownerName"
+                    value={formData.ownerName}
+                    onChange={handleInputChange}
+                    isInvalid={!!errors.ownerName}
+                    placeholder="Enter owner name"
+                  />
+                  <Form.Control.Feedback type="invalid">{errors.ownerName}</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email*</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    isInvalid={!!errors.email}
+                    placeholder="Enter email address"
+                  />
+                  <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Phone*</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    isInvalid={!!errors.phone}
+                    placeholder="Enter phone number"
+                  />
+                  <Form.Control.Feedback type="invalid">{errors.phone}</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Password*</Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    isInvalid={!!errors.password}
+                    placeholder="Enter password"
+                  />
+                  <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Confirm Password*</Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    isInvalid={!!errors.confirmPassword}
+                    placeholder="Confirm password"
+                  />
+                  <Form.Control.Feedback type="invalid">{errors.confirmPassword}</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Address*</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    isInvalid={!!errors.address}
+                    placeholder="Enter complete address"
+                  />
+                  <Form.Control.Feedback type="invalid">{errors.address}</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>City*</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    isInvalid={!!errors.city}
+                    placeholder="Enter city"
+                  />
+                  <Form.Control.Feedback type="invalid">{errors.city}</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>State*</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleInputChange}
+                    isInvalid={!!errors.state}
+                    placeholder="Enter state"
+                  />
+                  <Form.Control.Feedback type="invalid">{errors.state}</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Pincode*</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="pincode"
+                    value={formData.pincode}
+                    onChange={handleInputChange}
+                    isInvalid={!!errors.pincode}
+                    placeholder="Enter pincode"
+                  />
+                  <Form.Control.Feedback type="invalid">{errors.pincode}</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>GST Number</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="gstNumber"
+                    value={formData.gstNumber}
+                    onChange={handleInputChange}
+                    placeholder="Enter GST number (optional)"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>PAN Number</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="panNumber"
+                    value={formData.panNumber}
+                    onChange={handleInputChange}
+                    placeholder="Enter PAN number (optional)"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <div className="mt-3">
+              <Button variant="primary" type="submit" className="me-2">
+                Register Store
+              </Button>
+              <Button variant="secondary" onClick={handleBack}>
+                Cancel
+              </Button>
+            </div>
+          </Form>
+        </Row>
       </Container>
-      <Modal show={show} onHide={handleClose}>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Alert</Modal.Title>
+          <Modal.Title>Notification</Modal.Title>
         </Modal.Header>
         <Modal.Body>{message}</Modal.Body>
         <Modal.Footer>
-          <Button style={{ background: "#E9272D" }} onClick={handleClose}>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
             Close
           </Button>
         </Modal.Footer>
       </Modal>
-
-      <Footer />
     </>
-  );
-};
+  )
+}
 
-export default StoreRegister;
+export default StoreRegister

@@ -1,193 +1,257 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import axios from "axios";
-import { useAuth } from "../AuthContext/AuthContext";
-import { BASEURL } from "../Client/Comman/CommanConstans";
+"use client"
 
-const CartContext = createContext();
+import { createContext, useContext, useState, useEffect } from "react"
+import axios from "axios"
+import { BASEURL } from "../Client/Comman/CommanConstans"
+import { useAuth } from "../AuthContext/AuthContext"
+import { toast } from "react-toastify"
+
+const CartContext = createContext(null)
 
 export const CartProvider = ({ children }) => {
-  const { userToken } = useAuth();
-  const [cartItems, setCartItems] = useState([]);
-  const [cartQuantity, setCartQuantity] = useState(0); // Total number of items in cart
-  const [loading, setLoading] = useState(false);
-  //console.log("userToken from CartProvider", userToken);
+  const { userToken, isAuthenticated } = useAuth()
+  const [cartItems, setCartItems] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
-  // Fetch Cart Items (GET request)
-  const fetchCartItems = async () => {
-    try {
-      setLoading(true);
-  
-      const userId = localStorage.getItem("userId"); // Ensure userId exists
-      if (!userId) {
-        console.error("User ID is missing");
-        return;
+  // Fetch cart items when component mounts or auth state changes
+  useEffect(() => {
+    if (isAuthenticated && userToken) {
+      fetchCartItems()
+    } else {
+      setCartItems([])
+    }
+  }, [isAuthenticated, userToken])
+
+  // Listen for auth changes from other components
+  useEffect(() => {
+    const handleAuthChange = () => {
+      const token = localStorage.getItem("token")
+      if (token) {
+        fetchCartItems()
+      } else {
+        setCartItems([])
       }
-  
-      const response = await axios.get(`${BASEURL}api/cart/${userId}`, {
+    }
+
+    window.addEventListener("auth-changed", handleAuthChange)
+
+    return () => {
+      window.removeEventListener("auth-changed", handleAuthChange)
+    }
+  }, [])
+
+  const fetchCartItems = async (retryCount = 0) => {
+    if (!userToken) {
+      setCartItems([])
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      const response = await axios.get(`${BASEURL}/api/cart`, {
         headers: {
+          Authorization: `Bearer ${userToken}`,
           "x-access-token": userToken,
         },
-      });
-  
-      console.log("Cart items response:", response);
-  
-      if (response.data) {
-        setCartItems(response.data.rows);
-        setCartQuantity(response.data.count);
+        timeout: 10000, // 10 second timeout
+      })
+
+      if (response.data && response.data.items) {
+        setCartItems(response.data.items)
+      } else if (response.data) {
+        // Handle different response formats
+        setCartItems(response.data)
+      } else {
+        setCartItems([])
       }
     } catch (error) {
-      console.error("Failed to fetch cart items:", error);
+      console.error("Error fetching cart items:", error)
+      setError("Failed to fetch cart items")
+
+      // Retry logic - attempt up to 3 times with exponential backoff
+      if (retryCount < 3) {
+        const delay = Math.pow(2, retryCount) * 1000 // Exponential backoff
+        console.log(`Retrying cart fetch in ${delay}ms (attempt ${retryCount + 1})...`)
+
+        setTimeout(() => {
+          fetchCartItems(retryCount + 1)
+        }, delay)
+        return
+      }
+
+      // After all retries failed
+      setCartItems([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
-  
+  }
 
-  // Add item to cart (POST request)
-  const addToCart = async (product, quantity , size) => {
-    console.log("Adding to cart:", product, quantity);
-
-    const userToken = localStorage.getItem("userToken");
+  const addToCart = async (product, quantity = 1, size = "M", color = "Default") => {
     if (!userToken) {
-        toast.error("User not authenticated");
-        return;
+      toast.warning("Please login to add items to cart")
+      return false
     }
 
     try {
+      setLoading(true)
+
+      const productId = product.id || product._id
+
+      if (!productId) {
+        console.error("Invalid product ID:", product)
+        toast.error("Invalid product data")
+        setLoading(false)
+        return false
+      }
+
       const payload = {
-        userId: localStorage.getItem("userId"), // Ensure this key matches the backend expectations
-        productId: product._id, // Change "product" to "productId" to match JSON structure
+        productId: productId,
         quantity: quantity,
-        selectedSize: size, // Ensure 'size' is correctly set before passing
-    };
-    
+        size: size,
+        color: color,
+      }
 
-        console.log("Request URL:", `${BASEURL}api/cart/add`);
-        console.log("Payload being sent:", payload );
+      console.log("Sending payload:", payload)
+      console.log("Using token:", userToken)
 
-        const response = await axios.post(`${BASEURL}/api/cart/add`, payload, {
-            headers: {
-                "x-access-token": userToken,
-            },
-        });
+      const response = await axios.post(`${BASEURL}/api/cart/add`, payload, {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+          "x-access-token": userToken,
+          "Content-Type": "application/json",
+        },
+      })
 
-        console.log("API Response:", response.data);
+      console.log("Cart response:", response.data)
 
-        if (response.data) {
-            const newCartItem = response.data.data;
-            const existingItem = cartItems?.find((item) => item._id === product._id);
-
-            if (existingItem) {
-                setCartItems((prevItems) =>
-                    prevItems.map((item) =>
-                        item._id === product._id
-                            ? { ...item, quantity: item.quantity + quantity }
-                            : item
-                    )
-                );
-            } else {
-                setCartItems((prevItems) => [
-                    ...prevItems,
-                    { ...newCartItem, quantity: quantity },
-                ]);
-            }
-
-            setCartQuantity((prevQuantity) => prevQuantity + quantity);
-
-            toast.success("Product added to cart");
+      if (response.data) {
+        // Update cart items based on response
+        if (response.data.cart && response.data.cart.items) {
+          setCartItems(response.data.cart.items)
+        } else if (response.data.items) {
+          setCartItems(response.data.items)
+        } else if (Array.isArray(response.data)) {
+          setCartItems(response.data)
         }
+
+        toast.success("Product added to cart successfully!")
+        setLoading(false)
+        return true
+      }
     } catch (error) {
-        console.error("Add to cart error:", error.response?.data || error.message);
-
-        const errorMessage = error.response?.data?.message || "Failed to add product to cart";
-        toast.error(errorMessage);
+      console.error("Error adding to cart:", error)
+      const errorMessage = error.response?.data?.message || "Failed to add product to cart"
+      console.log("Error details:", errorMessage)
+      toast.error(errorMessage)
+      setLoading(false)
+      return false
     }
-};
+  }
 
-
-  // Update cart quantity
-  const updateCartQuantity = async (product, newQuantity) => {
-    if (newQuantity < 1) {
-      // If the quantity is less than 1, remove the item from the cart
-      removeFromCart(product.id);
-      return;
+  const removeFromCart = async (productId) => {
+    if (!userToken) {
+      return
     }
 
     try {
-      const payload = {
-        product: product.product,
-        quantity: newQuantity,
-      };
+      setLoading(true)
 
-      const response = await axios.put(
-        `${BASEURL}/api/cart/add/${product.id}`,
-        payload,
+      const response = await axios.post(
+        `${BASEURL}/api/cart/remove`,
+        { productId },
         {
           headers: {
+            Authorization: `Bearer ${userToken}`,
             "x-access-token": userToken,
           },
-        }
-      );
-
-      if (response.data) {
-        // Update the cart items state with the new quantity
-        setCartItems((prevItems) =>
-          prevItems.map((item) =>
-            item.id === product.id ? { ...item, quantity: newQuantity } : item
-          )
-        );
-        toast.success("Quantity updated successfully");
-      }
-    } catch (error) {
-      console.error("Failed to update cart item:", error);
-      toast.error("Failed to update cart item");
-    }
-  };
-
-  // Remove item from cart (DELETE request)
-  const removeFromCart = async (id) => {
-    try {
-      const response = await axios.delete(`${BASEURL}/orders/cart-item/${id}`, {
-        headers: {
-          "x-access-token": userToken,
         },
-      });
+      )
+
       if (response.data) {
-        // Remove the item from the cart state
-        setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
-        setCartQuantity((prevQuantity) => prevQuantity - 1);
-        toast.success("Item removed from cart");
+        // Update cart items based on response
+        if (response.data.cart && response.data.cart.items) {
+          setCartItems(response.data.cart.items)
+        } else if (response.data.items) {
+          setCartItems(response.data.items)
+        } else if (Array.isArray(response.data)) {
+          setCartItems(response.data)
+        }
+
+        toast.success("Product removed from cart")
       }
     } catch (error) {
-      console.error("Failed to remove item from cart:", error);
-      toast.error("Failed to remove item from cart");
+      console.error("Error removing from cart:", error)
+      toast.error("Failed to remove product from cart")
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => {
-    if (userToken) {
-      fetchCartItems();
+  const updateCartQuantity = async (productId, quantity) => {
+    if (!userToken || quantity < 1) {
+      return
     }
-  }, [userToken]);
+
+    try {
+      setLoading(true)
+
+      const response = await axios.post(
+        `${BASEURL}/api/cart/update`,
+        {
+          productId,
+          quantity,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+            "x-access-token": userToken,
+          },
+        },
+      )
+
+      if (response.data) {
+        // Update cart items based on response
+        if (response.data.cart && response.data.cart.items) {
+          setCartItems(response.data.cart.items)
+        } else if (response.data.items) {
+          setCartItems(response.data.items)
+        } else if (Array.isArray(response.data)) {
+          setCartItems(response.data)
+        }
+      }
+    } catch (error) {
+      console.error("Error updating cart quantity:", error)
+      toast.error("Failed to update cart quantity")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <CartContext.Provider
       value={{
         cartItems,
-        cartQuantity,
+        loading,
+        error,
         addToCart,
         removeFromCart,
         updateCartQuantity,
-        loading,
+        fetchCartItems,
         setCartItems,
       }}
     >
       {children}
     </CartContext.Provider>
-  );
-};
+  )
+}
 
 export const useCart = () => {
-  return useContext(CartContext);
-};
+  const context = useContext(CartContext)
+  if (!context) {
+    throw new Error("useCart must be used within a CartProvider")
+  }
+  return context
+}

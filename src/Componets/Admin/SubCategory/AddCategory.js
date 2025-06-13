@@ -1,306 +1,304 @@
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { Button, Col, Container, Form, Row } from "react-bootstrap";
-import { BASEURL } from "../../Client/Comman/CommanConstans";
-import { useAuth } from "../../AuthContext/AuthContext";
-import { useLocation, useNavigate } from "react-router-dom";
-import Loader from "../../Client/Loader/Loader";
+"use client"
+
+import { useState, useEffect } from "react"
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { Button, Col, Container, Form, Row, Card, Modal } from "react-bootstrap"
+import { useLocation, useNavigate } from "react-router-dom"
+import Loader from "../../Client/Loader/Loader"
+import ApiService from "../../api/services/api-service"
 
 const AddCategory = () => {
-  const { userToken } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState("")
+  const [showMessage, setShowMessage] = useState(false)
+  const [categoryId, setCategoryId] = useState(null)
+  const [mainCategories, setMainCategories] = useState([])
+  const [previewImage, setPreviewImage] = useState(null)
+  const [errors, setErrors] = useState({})
+
   const [formData, setFormData] = useState({
-    categoryname: "",
-    categoryimage: null,
-    description: "",
-    category: "",
-  });
-  const [errors, setErrors] = useState({});
-  const [message, setMessage] = useState("");
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [categoryId, setCategoryId] = useState(null);
-  const [originalData, setOriginalData] = useState({
-    categoryname: "",
-    categoryimage: null,
-    description: "",
-    category: "",
-  });
-  const [Category, setALLCategory] = useState([]);
-  const [loading, setLoading] = useState(false);
+    subcategory_name: "",
+    subcategory_description: "",
+    parent_category: "",
+    subcategory_image: null,
+  })
+
+  // Handle back button
   const handleBack = () => {
-    window.history.back();
-  };
+    window.history.back()
+  }
 
+  // Close message modal
+  const handleCloseMessage = () => setShowMessage(false)
+
+  // Show message
+  const showMessageAlert = (msg) => {
+    setMessage(msg)
+    setShowMessage(true)
+  }
+
+  // Handle input change
   const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: files ? files[0] : value, // Handle file input
-    }));
+    const { name, value, files } = e.target
+
     if (files) {
-      const file = e?.target?.files[0];
-      setSelectedImage(URL.createObjectURL(file));
-    }
-  };
-
-  const validate = () => {
-    let errors = {};
-    if (!formData.categoryname)
-      errors.categoryname = "Category name is required";
-    if (!categoryId) {
-      if (!formData.categoryimage)
-        errors.categoryimage = "Category image is required";
-    }
-    if (!formData.description) errors.description = "Description is required";
-    setErrors(errors);
-    return Object.keys(errors).length === 0; // Returns true if no errors
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validate()) {
-      setMessage("Please fill out all fields");
-      return;
-    }
-    if (categoryId) {
-      const formDataToSend = new FormData();
-      if (originalData.categoryname !== formData.categoryname) {
-        formDataToSend.append("name", formData.categoryname);
-      }
-      if (originalData.categoryimage !== formData.categoryimage) {
-        formDataToSend.append("category_image", formData.categoryimage);
-      }
-      if (originalData.description !== formData.description) {
-        formDataToSend.append("description", formData.description);
-      }
-      if (originalData.description !== formData.description) {
-        formDataToSend.append("category", formData.category);
-      }
-
-      try {
-        const response = await axios.put(
-          `${BASEURL}/kgn-admin/sub-category/${categoryId}`,
-          formDataToSend,
-          {
-            headers: {
-              "x-access-token": userToken,
-            },
-          }
-        );
-        if (response.data) {
-          navigate("/admin-allsubcategory");
-        }
-        setMessage("Product added successfully");
-      } catch (error) {
-        setMessage("Failed to add product");
-        console.error(error);
-      }
+      setFormData({ ...formData, [name]: files[0] })
+      setPreviewImage(URL.createObjectURL(files[0]))
     } else {
-      const formDataToSend = new FormData();
-      formDataToSend.append("name", formData.categoryname);
-      formDataToSend.append("category_image", formData.categoryimage);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("category", formData.category);
-
-      try {
-        const response = await axios.post(
-          `${BASEURL}/kgn-admin/sub-category`,
-          formDataToSend,
-          {
-            headers: {
-              "x-access-token": userToken,
-            },
-          }
-        );
-        if (response.data) {
-          navigate("/admin-allsubcategory");
-        }
-        setMessage("Category added successfully");
-      } catch (error) {
-        setMessage("Failed to add Category");
-        console.error(error);
-      }
+      setFormData({ ...formData, [name]: value })
     }
-  };
 
-  const getAllCategory = async () => {
+    // Clear error for this field when user makes changes
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" })
+    }
+  }
+
+  // Fetch all main categories
+  const fetchMainCategories = async () => {
     try {
-      const response = await axios.get(
-        `${BASEURL}/kgn-admin/category?page=1&limit=50`,
-        {
-          headers: {
-            "x-access-token": userToken,
-          },
-        }
-      );
-      if (response) {
-        setALLCategory(response.data.rows);
+      setLoading(true)
+      const response = await ApiService.getCategories(1, 100)
+      if (response && response.data && response.data.rows) {
+        setMainCategories(response.data.rows)
       }
+      setLoading(false)
     } catch (error) {
-      console.log(error);
+      setLoading(false)
+      console.error("Error fetching main categories:", error)
+      showMessageAlert(`Error: ${error.response?.data?.message || error.message}`)
     }
-  };
+  }
 
-  const getCategoryById = async (id) => {
+  // Validate form
+  const validate = () => {
+    const newErrors = {}
+
+    if (!formData.subcategory_name) newErrors.subcategory_name = "Subcategory name is required"
+    if (!formData.subcategory_description) newErrors.subcategory_description = "Description is required"
+    if (!formData.parent_category) newErrors.parent_category = "Parent category is required"
+
+    // Only require image for new subcategories
+    if (!categoryId && !formData.subcategory_image) {
+      newErrors.subcategory_image = "Subcategory image is required"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    if (!validate()) {
+      showMessageAlert("Please correct the errors before submitting")
+      return
+    }
+
     try {
-      const headers = {
-        "x-access-token": userToken,
-      };
-      setLoading(true);
-      const response = await axios.get(
-        `${BASEURL}/kgn-admin/sub-category/${id}`,
-        {
-          headers,
-        }
-      );
-      if (response) {
-        setLoading(false);
-        const data = response.data.data;
+      setLoading(true)
+
+      // Create FormData object for the API request
+      const formDataToSend = new FormData()
+      formDataToSend.append("subcategory_name", formData.subcategory_name)
+      formDataToSend.append("subcategory_description", formData.subcategory_description)
+      formDataToSend.append("parent_category", formData.parent_category)
+
+      if (formData.subcategory_image) {
+        formDataToSend.append("subcategory_image", formData.subcategory_image)
+      }
+
+      let response
+
+      if (categoryId) {
+        // Update existing subcategory
+        response = await ApiService.updateSubcategory(categoryId, formDataToSend)
+        showMessageAlert("Subcategory updated successfully")
+      } else {
+        // Create new subcategory
+        response = await ApiService.createSubcategory(formDataToSend)
+        showMessageAlert("Subcategory added successfully")
+      }
+
+      setLoading(false)
+
+      // Navigate back to dashboard after a short delay
+      setTimeout(() => {
+        navigate("/admin-dashboard")
+      }, 2000)
+    } catch (error) {
+      setLoading(false)
+      console.error("Error saving subcategory:", error)
+      showMessageAlert(`Error: ${error.response?.data?.message || error.message}`)
+    }
+  }
+
+  // Fetch subcategory by ID
+  const fetchSubcategoryById = async (id) => {
+    try {
+      setLoading(true)
+      const response = await ApiService.getSubcategoryById(id)
+
+      if (response && response.data && response.data.data) {
+        const subcategory = response.data.data
+
+        // Set form data from subcategory
         setFormData({
-          categoryname: data.name,
-          category: data.category,
-          description: data.description,
-        });
-        setSelectedImage(BASEURL + data.category_image);
-        setOriginalData({
-          categoryname: data.name,
-          category: data.category,
-          description: data.description,
-        });
+          subcategory_name: subcategory.subcategory_name || "",
+          subcategory_description: subcategory.subcategory_description || "",
+          parent_category: subcategory.parent_category?._id || "",
+          subcategory_image: null, // We don't load the actual file object, just the URL
+        })
+
+        // Set preview image if available
+        if (subcategory.subcategory_image) {
+          setPreviewImage(`http://localhost:5000${subcategory.subcategory_image}`)
+        }
       }
+
+      setLoading(false)
     } catch (error) {
-      console.log(error);
+      setLoading(false)
+      console.error("Error fetching subcategory:", error)
+      showMessageAlert(`Error: ${error.response?.data?.message || error.message}`)
     }
-  };
+  }
+
+  // Initialize component
   useEffect(() => {
-    const categoryId = location?.state?.categoryID;
-    if (categoryId) {
-      getCategoryById(categoryId);
-      setCategoryId(categoryId);
+    fetchMainCategories()
+
+    // Check if we're editing an existing subcategory
+    const categoryIdFromState = location?.state?.categoryID
+    if (categoryIdFromState) {
+      setCategoryId(categoryIdFromState)
+      fetchSubcategoryById(categoryIdFromState)
     }
-    getAllCategory();
-  }, []);
+  }, [location])
+
   return (
     <>
-      {loading ? <Loader /> : ""}
-      <Container className="bg-filler">
-        <Row className="py-3">
-          <Row className="">
-            <div className="text-start">
-              <FontAwesomeIcon
-                icon={faArrowLeft}
-                className="backicon pointer mb-3"
-                onClick={handleBack}
-              />
-            </div>
-            <h1 className="mb-3">{categoryId ? "Edit" : "Add"} Sub Category</h1>
-            {message && <div className="alert alert-info">{message}</div>}
-          </Row>
-          <Form onSubmit={handleSubmit}>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3" controlId="formProductName">
-                  <Form.Label>Category name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="categoryname"
-                    placeholder="Enter category name"
-                    value={formData.categoryname}
-                    onChange={handleInputChange}
-                    isInvalid={!!errors.categoryname}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.categoryname}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Row>
-                  <Col lg={8}>
-                    <Form.Group className="mb-3" controlId="formProductImage">
-                      <Form.Label>Category image</Form.Label>
-                      <Form.Control
-                        type="file"
-                        name="categoryimage"
-                        onChange={handleInputChange}
-                        isInvalid={!!errors.categoryimage}
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.categoryimage}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                  <Col lg={4}>
-                    {selectedImage && (
-                      <div className="mt-3">
-                        <img
-                          src={selectedImage}
-                          alt="Selected Preview"
-                          style={{
-                            width: "100%",
-                            maxHeight: "100px",
-                            objectFit: "contain",
-                          }}
-                        />
-                      </div>
-                    )}
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3" controlId="formSubCategory">
-                  <Form.Label>Category</Form.Label>
-                  <Form.Select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    isInvalid={!!errors.category}
-                  >
-                    <option value="">Select a category</option>
-                    {Category &&
-                      Category.map((row) => (
-                        <option value={row.id} key={row.id}>
-                          {row.category_name}
+      {loading && <Loader />}
+
+      <Container className="py-4">
+        <div className="d-flex align-items-center mb-4">
+          <Button variant="outline-secondary" onClick={handleBack} className="me-3">
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </Button>
+          <h2 className="mb-0">{categoryId ? "Edit Subcategory" : "Add New Subcategory"}</h2>
+        </div>
+
+        <Card>
+          <Card.Body>
+            <Form onSubmit={handleSubmit} noValidate>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Subcategory Name*</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="subcategory_name"
+                      value={formData.subcategory_name}
+                      onChange={handleInputChange}
+                      isInvalid={!!errors.subcategory_name}
+                    />
+                    <Form.Control.Feedback type="invalid">{errors.subcategory_name}</Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Parent Category*</Form.Label>
+                    <Form.Select
+                      name="parent_category"
+                      value={formData.parent_category}
+                      onChange={handleInputChange}
+                      isInvalid={!!errors.parent_category}
+                    >
+                      <option value="">Select Parent Category</option>
+                      {mainCategories.map((category) => (
+                        <option key={category._id} value={category._id}>
+                          {category.category_name}
                         </option>
                       ))}
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.subCategory}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3" controlId="formDescription">
-                  <Form.Label>Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    isInvalid={!!errors.description}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.description}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-            </Row>
-            <div className="mt-3">
-              <Button className="button" type="submit">
-                {categoryId ? "Edit" : "Add"} Sub Category
-              </Button>
-            </div>
-          </Form>
-        </Row>
-      </Container>
-    </>
-  );
-};
+                    </Form.Select>
+                    <Form.Control.Feedback type="invalid">{errors.parent_category}</Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+              </Row>
 
-export default AddCategory;
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Subcategory Image{!categoryId && "*"}</Form.Label>
+                    <Form.Control
+                      type="file"
+                      name="subcategory_image"
+                      onChange={handleInputChange}
+                      accept="image/*"
+                      isInvalid={!!errors.subcategory_image}
+                    />
+                    <Form.Control.Feedback type="invalid">{errors.subcategory_image}</Form.Control.Feedback>
+                  </Form.Group>
+
+                  {previewImage && (
+                    <div className="mt-2">
+                      <img
+                        src={previewImage || "/placeholder.svg"}
+                        alt="Subcategory Preview"
+                        className="img-thumbnail"
+                        style={{ maxHeight: "150px" }}
+                      />
+                    </div>
+                  )}
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Description*</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      name="subcategory_description"
+                      value={formData.subcategory_description}
+                      onChange={handleInputChange}
+                      isInvalid={!!errors.subcategory_description}
+                    />
+                    <Form.Control.Feedback type="invalid">{errors.subcategory_description}</Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <div className="d-flex justify-content-end mt-3">
+                <Button variant="secondary" onClick={handleBack} className="me-2">
+                  Cancel
+                </Button>
+                <Button variant="primary" type="submit">
+                  {categoryId ? "Update Subcategory" : "Add Subcategory"}
+                </Button>
+              </div>
+            </Form>
+          </Card.Body>
+        </Card>
+      </Container>
+
+      {/* Message Modal */}
+      <Modal show={showMessage} onHide={handleCloseMessage}>
+        <Modal.Header closeButton>
+          <Modal.Title>{message.includes("Error") ? "Error" : "Success"}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{message}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseMessage}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
+  )
+}
+
+export default AddCategory

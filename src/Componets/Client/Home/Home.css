@@ -1,19 +1,21 @@
-.custom-carousel {
-    width: 100%;
-    padding-top: 105px;
-  /* background-image: url("../../../../public/Images/banner-1.png"); */
-    min-height: 100vh;
-    color: white;
+.carousel-card {
+
+  padding-top: 95px; /* Optional – adjust as needed */
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.carousel-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1550px;
-    margin: 0 auto;
-    
+.carousel-card img {
+  width: 100%;
+  height: auto;
+  object-fit: cover; /* or 'contain' if you want full image visibility */
+  border-radius: 8px; /* optional */
+  padding: 7px;
 }
+
+
 
 .left-side {
     /* flex: 1;

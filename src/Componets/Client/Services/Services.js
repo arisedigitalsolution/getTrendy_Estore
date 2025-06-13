@@ -1,25 +1,26 @@
 import React from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import "./Services.css";
-import { FaRupeeSign, FaTruck } from "react-icons/fa";
-import { BsFillTelephoneInboundFill } from "react-icons/bs";
+import { TbPhoneCall } from "react-icons/tb";
 import { RiSecurePaymentFill } from "react-icons/ri";
+import { TbTruckReturn } from "react-icons/tb";
+import { TbTruckDelivery } from "react-icons/tb";
 
 const Services = () => {
   return (
     <>
-      <Container className="Services-Container">
+      <Container fluid className="Services-Container">
         <Row className="service-row">
           <Col className="margin-btm">
             <div className="service-colum">
               <div>
                 <span>
                   {" "}
-                  <FaTruck className="icon service-icon" />
+                  <TbTruckDelivery className="icon service-icon" />
                 </span>
               </div>
               <div>
-                <strong>Flexible Delivery</strong>
+                <strong className="ml-10">Faster Delivery</strong>
               </div>
             </div>
           </Col>
@@ -28,11 +29,11 @@ const Services = () => {
               <div>
                 <span>
                   {" "}
-                  <FaRupeeSign className="icon service-icon" />
+                  <TbTruckReturn className="icon service-icon" />
                 </span>
               </div>
-              <div>
-                <strong>100% Money Back </strong>
+              <div className="ml-10">
+                <strong>5 Day's Return Policy </strong>
               </div>
             </div>
           </Col>
@@ -44,7 +45,7 @@ const Services = () => {
                   <RiSecurePaymentFill className="icon service-icon" />
                 </span>
               </div>
-              <div>
+              <div className="ml-10">
                 <strong>Secure Payments</strong>
               </div>
             </div>
@@ -54,10 +55,10 @@ const Services = () => {
               <div>
                 <span>
                   {" "}
-                  <BsFillTelephoneInboundFill className="icon service-icon" />
+                  <TbPhoneCall className="icon service-icon" />
                 </span>
               </div>
-              <div>
+              <div className="ml-10">
                 <strong>24 Hours Support</strong>
               </div>
             </div>

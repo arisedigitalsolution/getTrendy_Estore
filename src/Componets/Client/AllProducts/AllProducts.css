@@ -1,5 +1,4 @@
-/* src/AllProducts.css */
-
+/* 
 .product-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -20,31 +19,22 @@
 
 .header input[type="search"] {
     width: 300px;
-    /* Adjust width as needed */
     border-radius: 5px;
-    /* Adjust border radius as needed */
     border: 2px solid red;
-    /* Red border */
     padding: 5px;
     padding-left: 10px;
-    /* Add some padding for better appearance */
 }
 
 .nav-tabs .nav-link {
     color: black;
-    /* Muted color for inactive tabs */
     border-bottom: none;
-    /* Remove underline for inactive tabs */
     transition: color 0.2s, border-bottom 0.2s;
-    /* Smooth transition */
 }
 
 .nav-tabs .nav-link.active {
     color: #E9272D !important;
-    /* Red color for active tab */
     font-weight: bold;
     border-bottom: 3px solid #E9272D !important;
-    /* Red underline for active tab */
 }
 
 .nav-tabs .nav-link:hover {
@@ -80,7 +70,6 @@
     width: 306px;
     height: 250px;
     display: flex;
-    /* justify-content: center; */
     align-items: center;
     background-color: white;
 }
@@ -89,7 +78,6 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    /* Center image */
 }
 
 .card-info {
@@ -106,7 +94,6 @@
 
 .icon {
     margin: 0 10px;
-    /* Space between icons */
     font-size: 1.2em;
     transition: color 0.2s;
 }
@@ -119,4 +106,64 @@
     .header input[type="search"] {
         width: auto;
     }
+} */
+
+.product-card {
+  transition: all 0.3s ease;
+  border: 1px solid #eee;
+  overflow: hidden;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.product-image-container {
+  height: 200px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.product-image {
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.product-image:hover {
+  transform: scale(1.05);
+}
+
+.product-title {
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 2.5rem;
+}
+
+.product-title:hover {
+  color: #0d6efd;
+}
+
+.product-details {
+  font-size: 0.85rem;
+}
+
+.product-price {
+  font-size: 1.1rem;
+}
+
+.product-actions {
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .product-image-container {
+    height: 180px;
+  }
 }
